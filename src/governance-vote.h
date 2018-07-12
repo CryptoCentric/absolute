@@ -11,8 +11,6 @@
 #include "primitives/transaction.h"
 #include "bls/bls.h"
 
-#include <boost/lexical_cast.hpp>
-
 class CGovernanceVote;
 class CConnman;
 

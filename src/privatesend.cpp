@@ -16,7 +16,7 @@
 #include "util.h"
 #include "utilmoneystr.h"
 
-#include <boost/lexical_cast.hpp>
+#include <string>
 
 bool CPrivateSendEntry::AddScriptSig(const CTxIn& txin)
 {
@@ -162,7 +162,7 @@ bool CPrivateSendBroadcastTx::Sign()
             return false;
         }
     } else {
-        std::string strMessage = tx->GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
+        std::string strMessage = tx->GetHash().ToString() + std::to_string(sigTime);
 
         if (!CMessageSigner::SignMessage(strMessage, vchSig, activeMasternodeInfo.legacyKeyOperator)) {
             LogPrintf("CPrivateSendBroadcastTx::Sign -- SignMessage() failed\n");
@@ -200,7 +200,7 @@ bool CPrivateSendBroadcastTx::CheckSignature(const CKeyID& keyIDOperator, const 
             return false;
         }
     } else {
-        std::string strMessage = tx->GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
+        std::string strMessage = tx->GetHash().ToString() + std::to_string(sigTime);
 
         if (!CMessageSigner::VerifyMessage(keyIDOperator, vchSig, strMessage, strError)) {
             LogPrintf("CPrivateSendBroadcastTx::CheckSignature -- Got bad dstx signature, error: %s\n", strError);

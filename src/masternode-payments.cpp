@@ -570,7 +570,7 @@ bool CMasternodePaymentVote::Sign()
         }
     } else {
         std::string strMessage = masternodeOutpoint.ToStringShort() +
-                    boost::lexical_cast<std::string>(nBlockHeight) +
+                    std::to_string(nBlockHeight) +
                     ScriptToAsmStr(payee);
 
         if(!CMessageSigner::SignMessage(strMessage, vchSig, activeMasternodeInfo.legacyKeyOperator)) {
@@ -1114,7 +1114,7 @@ bool CMasternodePaymentVote::CheckSignature(const CKeyID& keyIDOperator, int nVa
         if (!CHashSigner::VerifyHash(hash, keyIDOperator, vchSig, strError)) {
             // could be a signature in old format
             std::string strMessage = masternodeOutpoint.ToStringShort() +
-                        boost::lexical_cast<std::string>(nBlockHeight) +
+                        std::to_string(nBlockHeight) +
                         ScriptToAsmStr(payee);
             if(!CMessageSigner::VerifyMessage(keyIDOperator, vchSig, strMessage, strError)) {
                 // nope, not in old format either
@@ -1130,7 +1130,7 @@ bool CMasternodePaymentVote::CheckSignature(const CKeyID& keyIDOperator, int nVa
         }
     } else {
         std::string strMessage = masternodeOutpoint.ToStringShort() +
-                    boost::lexical_cast<std::string>(nBlockHeight) +
+                    std::to_string(nBlockHeight) +
                     ScriptToAsmStr(payee);
 
         if (!CMessageSigner::VerifyMessage(keyIDOperator, vchSig, strMessage, strError)) {

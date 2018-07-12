@@ -10,8 +10,6 @@
 #include "messagesigner.h"
 #include "util.h"
 
-#include <boost/lexical_cast.hpp>
-
 std::string CGovernanceVoting::ConvertOutcomeToString(vote_outcome_enum_t nOutcome)
 {
     static const std::map<vote_outcome_enum_t, std::string> mapOutcomeString = {

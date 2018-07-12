@@ -17,6 +17,7 @@
 
 #include <string>
 #include <univalue.h>
+#include <string>
 
 CGovernanceObject::CGovernanceObject() :
     cs(),
