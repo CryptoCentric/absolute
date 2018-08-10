@@ -167,10 +167,8 @@ void CSporkManager::ProcessSpork(CNode* pfrom, const std::string& strCommand, CD
                     LogPrintf("%s new signer\n", strLogMsg);
                 }
             } else {
-                LogPrintf("%s updated\n", strLogMsg);
+                LogPrintf("%s new\n", strLogMsg);
             }
-        } else {
-            LogPrintf("%s new\n", strLogMsg);
         }
 
 
@@ -188,6 +186,7 @@ void CSporkManager::ProcessSpork(CNode* pfrom, const std::string& strCommand, CD
         }
 
     } else if (strCommand == NetMsgType::GETSPORKS) {
+        LOCK(cs); // make sure to not lock this together with cs_main
         for (const auto& pair : mapSporksActive) {
             for (const auto& signerSporkPair: pair.second) {
                 connman.PushMessage(pfrom, CNetMsgMaker(pfrom->GetSendVersion()).Make(NetMsgType::SPORK, signerSporkPair.second));
@@ -228,7 +227,6 @@ void CSporkManager::ExecuteSpork(int nSporkID, int nValue)
 
 bool CSporkManager::UpdateSpork(int nSporkID, int64_t nValue, CConnman& connman)
 {
-
     CSporkMessage spork = CSporkMessage(nSporkID, nValue, GetAdjustedTime());
 
     bool fSpork6IsActive = IsSporkActive(SPORK_6_NEW_SIGS);
@@ -337,6 +335,7 @@ bool CSporkManager::GetSporkByHash(const uint256& hash, CSporkMessage &sporkRet)
 }
 
 bool CSporkManager::SetSporkAddress(const std::string& strAddress) {
+    LOCK(cs);
     CBitcoinAddress address(strAddress);
     CKeyID keyid;
     if (!address.IsValid() || !address.GetKeyID(keyid)) {
@@ -374,6 +373,7 @@ bool CSporkManager::SetPrivKey(const std::string& strPrivKey)
 
     CSporkMessage spork;
     if (spork.Sign(key)) {
+	    LOCK(cs);
         // Test signing successful, proceed
         LogPrintf("CSporkManager::SetPrivKey -- Successfully initialized as spork signer\n");
 
