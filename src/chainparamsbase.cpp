@@ -106,9 +106,12 @@ CBaseChainParams& BaseParams(const std::string& chain)
 void SelectBaseParams(const std::string& chain)
 {
     if (chain == CBaseChainParams::POVNET) {
-        std::string PoVNETName = GetPoVNETName();
-        assert(!PoVNETName.empty());
-        PoVNETParams = new CBasePoVNETParams(PoVNETName);
+        std::string povNetName = GetPoVNETName();
+        assert(!povNetName.empty());
+
+        povNetParams = (CBasePoVNETParams*)new uint8_t[sizeof(CBasePoVNETParams)];
+        memset(povNetParams, 0, sizeof(CBasePoVNETParams));
+        new (povNetParams) CBasePoVNETParams(povNetParams);
     }
     pCurrentBaseParams = &BaseParams(chain);
 }

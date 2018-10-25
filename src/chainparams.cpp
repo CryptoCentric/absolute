@@ -722,7 +722,9 @@ CChainParams& Params(const std::string& chain)
 void SelectParams(const std::string& network)
 {
     if (network == CBaseChainParams::POVNET) {
-        PoVNETParams = new CPoVNETParams();
+        povNetParams = (CPoVNetParams*)new uint8_t[sizeof(CPoVNetParams)];
+        memset(povNetParams, 0, sizeof(PoVNetParams));
+        new (povNetParams) CPoVNetParams();
     }
     SelectBaseParams(network);
     pCurrentParams = &Params(network);
