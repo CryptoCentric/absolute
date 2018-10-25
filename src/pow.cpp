@@ -144,6 +144,13 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
+    // this is only active on povnets
+    if (pindexLast->nHeight < params.nMinimumDifficultyBlocks) {
+        unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
+        return nProofOfWorkLimit;
+    }
+
+    // Most recent algo first
     if (pindexLast->nHeight + 1 >= params.nPowDGWHeight) {
         return DarkGravityWave(pindexLast, pblock, params);
     }

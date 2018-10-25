@@ -654,7 +654,7 @@ static bool IsCurrentForFeeEstimation()
 }
 
 bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const CTransactionRef& ptx, bool fLimitFree,
-                              bool* pfMissingInputs, int64_t nAcceptTime, bool fOverrideMempoolLimit, 
+                              bool* pfMissingInputs, int64_t nAcceptTime, bool fOverrideMempoolLimit,
                               const CAmount& nAbsurdFee, std::vector<COutPoint>& coins_to_uncache, bool fDryRun)
 {
     const CTransaction& tx = *ptx;
@@ -720,7 +720,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
         {
             const CTransaction *ptxConflicting = itConflicting->second;
 
-     
+
             // InstantSend txes are not replacable
             if(instantsend.HasTxLockRequest(ptxConflicting->GetHash())) {
                 // this tx conflicts with a Transaction Lock Request candidate
@@ -936,7 +936,7 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
 }
 
 bool AcceptToMemoryPoolWithTime(CTxMemPool& pool, CValidationState &state, const CTransactionRef &tx, bool fLimitFree,
-                        bool* pfMissingInputs, int64_t nAcceptTime, bool fOverrideMempoolLimit, 
+                        bool* pfMissingInputs, int64_t nAcceptTime, bool fOverrideMempoolLimit,
                         const CAmount nAbsurdFee, bool fDryRun)
 {
     std::vector<COutPoint> coins_to_uncache;
@@ -1184,13 +1184,13 @@ CAmount GetBlockSubsidy(int nPrevBits, int nPrevHeight, const Consensus::Params&
         nSubsidy -= nSubsidy/nSubsidyDivide;
     }
 
-	// Hard fork to increase the block reward by 10 extra percent (allowing budget/superblocks)
-    CAmount nSuperblockPart = 0;
-	if( nPrevHeight > consensusParams.nBudgetPaymentsStartBlock) {
-		nSuperblockPart = nSubsidy / 10;
-		nSubsidy += nSuperblockPart;
-	}
+    // this is only active on devnets
+    if (nPrevHeight < consensusParams.nHighSubsidyBlocks) {
+        nSubsidy *= consensusParams.nHighSubsidyFactor;
+    }
 
+    // Hard fork to reduce the block reward by 10 extra percent (allowing budget/superblocks)
+    CAmount nSuperblockPart = (nPrevHeight > consensusParams.nBudgetPaymentsStartBlock) ? nSubsidy/10 : 0;
 
     return fSuperblockPartOnly ? nSuperblockPart : nSubsidy - nSuperblockPart;
 }
