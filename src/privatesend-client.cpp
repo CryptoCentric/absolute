@@ -42,7 +42,7 @@ void CPrivateSendClientManager::ProcessMessage(CNode* pfrom, const std::string& 
             return;
         }
 
-        CDarksendQueue dsq;
+        CPrivateSendQueue dsq;
         vRecv >> dsq;
 
         {
@@ -50,7 +50,7 @@ void CPrivateSendClientManager::ProcessMessage(CNode* pfrom, const std::string& 
             if(!lockRecv) return;
 
             // process every dsq only once
-            for (const auto& q : vecDarksendQueue) {
+            for (const auto& q : vecPrivateSendQueue) {
                 if(q == dsq) {
                     // LogPrint("privatesend", "DSQUEUE -- %s seen\n", dsq.ToString());
                     return;
@@ -87,7 +87,7 @@ void CPrivateSendClientManager::ProcessMessage(CNode* pfrom, const std::string& 
             TRY_LOCK(cs_vecqueue, lockRecv);
             if(!lockRecv) return;
 
-            for (const auto& q : vecDarksendQueue) {
+            for (const auto& q : vecPrivateSendQueue) {
                 if(q.masternodeOutpoint == dsq.masternodeOutpoint) {
                     // no way same mn can send another "not yet ready" dsq this soon
                     LogPrint("privatesend", "DSQUEUE -- Masternode %s is sending WAY too many dsq messages\n", infoMn.addr.ToString());
@@ -112,7 +112,7 @@ void CPrivateSendClientManager::ProcessMessage(CNode* pfrom, const std::string& 
                     dsq.fTried = true;
                 }
             }
-            vecDarksendQueue.push_back(dsq);
+            vecPrivateSendQueue.push_back(dsq);
             dsq.Relay(connman);
         }
 
@@ -820,7 +820,7 @@ bool CPrivateSendClientSession::DoAutomaticDenominating(CConnman& connman, bool 
         return false;
     }
 
-    TRY_LOCK(cs_darksend, lockDS);
+    TRY_LOCK(cs_privatesend, lockDS);
     if(!lockDS) {
         strAutoDenomResult = _("Lock is already in place.");
         return false;
@@ -995,7 +995,7 @@ bool CPrivateSendClientSession::JoinExistingQueue(CAmount nBalanceNeedsAnonymize
 
     std::vector<CAmount> vecStandardDenoms = CPrivateSend::GetStandardDenominations();
     // Look through the queues and see if anything matches
-    CDarksendQueue dsq;
+    CPrivateSendQueue dsq;
     while (privateSendClient.GetQueueItemAndTry(dsq)) {
         masternode_info_t infoMn;
 
@@ -1019,7 +1019,7 @@ bool CPrivateSendClientSession::JoinExistingQueue(CAmount nBalanceNeedsAnonymize
         }
 
         // mixing rate limit i.e. nLastDsq check should already pass in DSQUEUE ProcessMessage
-        // in order for dsq to get into vecDarksendQueue, so we should be safe to mix already,
+        // in order for dsq to get into vecPrivateSendQueue, so we should be safe to mix already,
         // no need for additional verification here
 
         LogPrint("privatesend", "CPrivateSendClientSession::JoinExistingQueue -- found valid queue: %s\n", dsq.ToString());
@@ -1043,7 +1043,7 @@ bool CPrivateSendClientSession::JoinExistingQueue(CAmount nBalanceNeedsAnonymize
 
         nSessionDenom = dsq.nDenom;
         infoMixingMasternode = infoMn;
-        pendingDsaRequest = CPendingDsaRequest(infoMn.addr, CDarksendAccept(nSessionDenom, txMyCollateral));
+        pendingDsaRequest = CPendingDsaRequest(infoMn.addr, CPrivateSendAccept(nSessionDenom, txMyCollateral));
         connman.AddPendingMasternode(infoMn.addr);
         // TODO: add new state POOL_STATE_CONNECTING and bump MIN_PRIVATESEND_PEER_PROTO_VERSION
         SetState(POOL_STATE_QUEUE);
@@ -1067,7 +1067,7 @@ bool CPrivateSendClientSession::StartNewQueue(CAmount nValueMin, CAmount nBalanc
     // ** find the coins we'll use
     std::vector<CTxIn> vecTxIn;
     CAmount nValueInTmp = 0;
-    if(!pwalletMain->SelectCoinsDark(nValueMin, nBalanceNeedsAnonymized, vecTxIn, nValueInTmp, 0, privateSendClient.nPrivateSendRounds - 1)) {
+    if(!pwalletMain->SelectPrivateCoins(nValueMin, nBalanceNeedsAnonymized, vecTxIn, nValueInTmp, 0, privateSendClient.nPrivateSendRounds - 1)) {
         // this should never happen
         LogPrintf("CPrivateSendClientSession::StartNewQueue -- Can't mix: no compatible inputs found!\n");
         strAutoDenomResult = _("Can't mix: no compatible inputs found!");
@@ -1119,7 +1119,7 @@ bool CPrivateSendClientSession::StartNewQueue(CAmount nValueMin, CAmount nBalanc
 
         infoMixingMasternode = infoMn;
         connman.AddPendingMasternode(infoMn.addr);
-        pendingDsaRequest = CPendingDsaRequest(infoMn.addr, CDarksendAccept(nSessionDenom, txMyCollateral));
+        pendingDsaRequest = CPendingDsaRequest(infoMn.addr, CPrivateSendAccept(nSessionDenom, txMyCollateral));
         // TODO: add new state POOL_STATE_CONNECTING and bump MIN_PRIVATESEND_PEER_PROTO_VERSION
         SetState(POOL_STATE_QUEUE);
         nTimeLastSuccessfulStep = GetTime();
@@ -1574,7 +1574,7 @@ bool CPrivateSendClientSession::CreateDenominated(const CompactTallyItem& tallyI
     return true;
 }
 
-void CPrivateSendClientSession::RelayIn(const CDarkSendEntry& entry, CConnman& connman)
+void CPrivateSendClientSession::RelayIn(const CPrivateSendEntry& entry, CConnman& connman)
 {
     if(!infoMixingMasternode.fInfoValid) return;
 

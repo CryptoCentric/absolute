@@ -18,7 +18,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-bool CDarkSendEntry::AddScriptSig(const CTxIn& txin)
+bool CPrivateSendEntry::AddScriptSig(const CTxIn& txin)
 {
     for (auto& txdsin : vecTxDSIn) {
         if(txdsin.prevout == txin.prevout && txdsin.nSequence == txin.nSequence) {
@@ -34,7 +34,7 @@ bool CDarkSendEntry::AddScriptSig(const CTxIn& txin)
     return false;
 }
 
-uint256 CDarksendQueue::GetSignatureHash() const
+uint256 CPrivateSendQueue::GetSignatureHash() const
 {
     // Remove after migration to 70211
     {
@@ -46,7 +46,7 @@ uint256 CDarksendQueue::GetSignatureHash() const
     // return SerializeHash(*this);
 }
 
-bool CDarksendQueue::Sign()
+bool CPrivateSendQueue::Sign()
 {
     if(!fMasternodeMode) return false;
 
@@ -60,12 +60,12 @@ bool CDarksendQueue::Sign()
         uint256 hash = GetSignatureHash();
 
         if (!CHashSigner::SignHash(hash, activeMasternodeInfo.legacyKeyOperator, vchSig)) {
-            LogPrintf("CDarksendQueue::Sign -- SignHash() failed\n");
+            LogPrintf("CPrivateSendQueue::Sign -- SignHash() failed\n");
             return false;
         }
 
         if (!CHashSigner::VerifyHash(hash, activeMasternodeInfo.legacyKeyIDOperator, vchSig, strError)) {
-            LogPrintf("CDarksendQueue::Sign -- VerifyHash() failed, error: %s\n", strError);
+            LogPrintf("CPrivateSendQueue::Sign -- VerifyHash() failed, error: %s\n", strError);
             return false;
         }
     } else {
@@ -75,12 +75,12 @@ bool CDarksendQueue::Sign()
                         boost::lexical_cast<std::string>(fReady);
 
         if(!CMessageSigner::SignMessage(strMessage, vchSig, activeMasternodeInfo.legacyKeyOperator)) {
-            LogPrintf("CDarksendQueue::Sign -- SignMessage() failed, %s\n", ToString());
+            LogPrintf("CPrivateSendQueue::Sign -- SignMessage() failed, %s\n", ToString());
             return false;
         }
 
         if(!CMessageSigner::VerifyMessage(activeMasternodeInfo.legacyKeyIDOperator, vchSig, strMessage, strError)) {
-            LogPrintf("CDarksendQueue::Sign -- VerifyMessage() failed, error: %s\n", strError);
+            LogPrintf("CPrivateSendQueue::Sign -- VerifyMessage() failed, error: %s\n", strError);
             return false;
         }
     }
@@ -88,7 +88,7 @@ bool CDarksendQueue::Sign()
     return true;
 }
 
-bool CDarksendQueue::CheckSignature(const CKeyID& keyIDOperator, const CBLSPublicKey& blsPubKey) const
+bool CPrivateSendQueue::CheckSignature(const CKeyID& keyIDOperator, const CBLSPublicKey& blsPubKey) const
 {
     std::string strError = "";
     if (deterministicMNManager->IsDeterministicMNsSporkActive()) {
@@ -105,7 +105,7 @@ bool CDarksendQueue::CheckSignature(const CKeyID& keyIDOperator, const CBLSPubli
 
         if (!CHashSigner::VerifyHash(hash, keyIDOperator, vchSig, strError)) {
             // we don't care about queues with old signature format
-            LogPrintf("CDarksendQueue::CheckSignature -- VerifyHash() failed, error: %s\n", strError);
+            LogPrintf("CPrivateSendQueue::CheckSignature -- VerifyHash() failed, error: %s\n", strError);
             return false;
         }
     } else {
@@ -115,7 +115,7 @@ bool CDarksendQueue::CheckSignature(const CKeyID& keyIDOperator, const CBLSPubli
                         boost::lexical_cast<std::string>(fReady);
 
         if(!CMessageSigner::VerifyMessage(keyIDOperator, vchSig, strMessage, strError)) {
-            LogPrintf("CDarksendQueue::CheckSignature -- Got bad Masternode queue signature: %s; error: %s\n", ToString(), strError);
+            LogPrintf("CPrivateSendQueue::CheckSignature -- Got bad Masternode queue signature: %s; error: %s\n", ToString(), strError);
             return false;
         }
     }
@@ -123,7 +123,7 @@ bool CDarksendQueue::CheckSignature(const CKeyID& keyIDOperator, const CBLSPubli
     return true;
 }
 
-bool CDarksendQueue::Relay(CConnman& connman)
+bool CPrivateSendQueue::Relay(CConnman& connman)
 {
     connman.ForEachNode([&connman, this](CNode* pnode) {
         CNetMsgMaker msgMaker(pnode->GetSendVersion());
@@ -133,12 +133,12 @@ bool CDarksendQueue::Relay(CConnman& connman)
     return true;
 }
 
-uint256 CDarksendBroadcastTx::GetSignatureHash() const
+uint256 CPrivateSendBroadcastTx::GetSignatureHash() const
 {
     return SerializeHash(*this);
 }
 
-bool CDarksendBroadcastTx::Sign()
+bool CPrivateSendBroadcastTx::Sign()
 {
     if(!fMasternodeMode) return false;
 
@@ -153,24 +153,24 @@ bool CDarksendBroadcastTx::Sign()
         uint256 hash = GetSignatureHash();
 
         if (!CHashSigner::SignHash(hash, activeMasternodeInfo.legacyKeyOperator, vchSig)) {
-            LogPrintf("CDarksendBroadcastTx::Sign -- SignHash() failed\n");
+            LogPrintf("CPrivateSendBroadcastTx::Sign -- SignHash() failed\n");
             return false;
         }
 
         if (!CHashSigner::VerifyHash(hash, activeMasternodeInfo.legacyKeyIDOperator, vchSig, strError)) {
-            LogPrintf("CDarksendBroadcastTx::Sign -- VerifyHash() failed, error: %s\n", strError);
+            LogPrintf("CPrivateSendBroadcastTx::Sign -- VerifyHash() failed, error: %s\n", strError);
             return false;
         }
     } else {
         std::string strMessage = tx->GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
 
         if(!CMessageSigner::SignMessage(strMessage, vchSig, activeMasternodeInfo.legacyKeyOperator)) {
-            LogPrintf("CDarksendBroadcastTx::Sign -- SignMessage() failed\n");
+            LogPrintf("CPrivateSendBroadcastTx::Sign -- SignMessage() failed\n");
             return false;
         }
 
         if(!CMessageSigner::VerifyMessage(activeMasternodeInfo.legacyKeyIDOperator, vchSig, strMessage, strError)) {
-            LogPrintf("CDarksendBroadcastTx::Sign -- VerifyMessage() failed, error: %s\n", strError);
+            LogPrintf("CPrivateSendBroadcastTx::Sign -- VerifyMessage() failed, error: %s\n", strError);
             return false;
         }
     }
@@ -178,7 +178,7 @@ bool CDarksendBroadcastTx::Sign()
     return true;
 }
 
-bool CDarksendBroadcastTx::CheckSignature(const CKeyID& keyIDOperator, const CBLSPublicKey& blsPubKey) const
+bool CPrivateSendBroadcastTx::CheckSignature(const CKeyID& keyIDOperator, const CBLSPublicKey& blsPubKey) const
 {
     std::string strError = "";
 
@@ -196,14 +196,14 @@ bool CDarksendBroadcastTx::CheckSignature(const CKeyID& keyIDOperator, const CBL
 
         if (!CHashSigner::VerifyHash(hash, keyIDOperator, vchSig, strError)) {
             // we don't care about dstxes with old signature format
-            LogPrintf("CDarksendBroadcastTx::CheckSignature -- VerifyHash() failed, error: %s\n", strError);
+            LogPrintf("CPrivateSendBroadcastTx::CheckSignature -- VerifyHash() failed, error: %s\n", strError);
             return false;
         }
     } else {
         std::string strMessage = tx->GetHash().ToString() + boost::lexical_cast<std::string>(sigTime);
 
         if(!CMessageSigner::VerifyMessage(keyIDOperator, vchSig, strMessage, strError)) {
-            LogPrintf("CDarksendBroadcastTx::CheckSignature -- Got bad dstx signature, error: %s\n", strError);
+            LogPrintf("CPrivateSendBroadcastTx::CheckSignature -- Got bad dstx signature, error: %s\n", strError);
             return false;
         }
     }
@@ -211,7 +211,7 @@ bool CDarksendBroadcastTx::CheckSignature(const CKeyID& keyIDOperator, const CBL
     return true;
 }
 
-bool CDarksendBroadcastTx::IsExpired(int nHeight)
+bool CPrivateSendBroadcastTx::IsExpired(int nHeight)
 {
     // expire confirmed DSTXes after ~1h since confirmation
     return (nConfirmedHeight != -1) && (nHeight - nConfirmedHeight > 24);
@@ -220,7 +220,7 @@ bool CDarksendBroadcastTx::IsExpired(int nHeight)
 void CPrivateSendBaseSession::SetNull()
 {
     // Both sides
-    LOCK(cs_darksend);
+    LOCK(cs_privatesend);
     nState = POOL_STATE_IDLE;
     nSessionID = 0;
     nSessionDenom = 0;
@@ -233,7 +233,7 @@ void CPrivateSendBaseSession::SetNull()
 void CPrivateSendBaseManager::SetNull()
 {
     LOCK(cs_vecqueue);
-    vecDarksendQueue.clear();
+    vecPrivateSendQueue.clear();
 }
 
 void CPrivateSendBaseManager::CheckQueue()
@@ -242,21 +242,21 @@ void CPrivateSendBaseManager::CheckQueue()
     if(!lockDS) return; // it's ok to fail here, we run this quite frequently
 
     // check mixing queue objects for timeouts
-    std::vector<CDarksendQueue>::iterator it = vecDarksendQueue.begin();
-    while(it != vecDarksendQueue.end()) {
+    std::vector<CPrivateSendQueue>::iterator it = vecPrivateSendQueue.begin();
+    while(it != vecPrivateSendQueue.end()) {
         if((*it).IsExpired()) {
             LogPrint("privatesend", "CPrivateSendBaseManager::%s -- Removing expired queue (%s)\n", __func__, (*it).ToString());
-            it = vecDarksendQueue.erase(it);
+            it = vecPrivateSendQueue.erase(it);
         } else ++it;
     }
 }
 
-bool CPrivateSendBaseManager::GetQueueItemAndTry(CDarksendQueue& dsqRet)
+bool CPrivateSendBaseManager::GetQueueItemAndTry(CPrivateSendQueue& dsqRet)
 {
     TRY_LOCK(cs_vecqueue, lockDS);
     if(!lockDS) return false; // it's ok to fail here, we run this quite frequently
 
-    for (auto& dsq : vecDarksendQueue) {
+    for (auto& dsq : vecPrivateSendQueue) {
         // only try each queue once
         if(dsq.fTried || dsq.IsExpired()) continue;
         dsq.fTried = true;
@@ -282,7 +282,7 @@ std::string CPrivateSendBaseSession::GetStateString() const
 
 // Definitions for static data members
 std::vector<CAmount> CPrivateSend::vecStandardDenominations;
-std::map<uint256, CDarksendBroadcastTx> CPrivateSend::mapDSTX;
+std::map<uint256, CPrivateSendBroadcastTx> CPrivateSend::mapDSTX;
 CCriticalSection CPrivateSend::cs_mapdstx;
 
 void CPrivateSend::InitStandardDenominations()
@@ -514,23 +514,23 @@ std::string CPrivateSend::GetMessageByID(PoolMessage nMessageID)
     }
 }
 
-void CPrivateSend::AddDSTX(const CDarksendBroadcastTx& dstx)
+void CPrivateSend::AddDSTX(const CPrivateSendBroadcastTx& dstx)
 {
     LOCK(cs_mapdstx);
     mapDSTX.insert(std::make_pair(dstx.tx->GetHash(), dstx));
 }
 
-CDarksendBroadcastTx CPrivateSend::GetDSTX(const uint256& hash)
+CPrivateSendBroadcastTx CPrivateSend::GetDSTX(const uint256& hash)
 {
     LOCK(cs_mapdstx);
     auto it = mapDSTX.find(hash);
-    return (it == mapDSTX.end()) ? CDarksendBroadcastTx() : it->second;
+    return (it == mapDSTX.end()) ? CPrivateSendBroadcastTx() : it->second;
 }
 
 void CPrivateSend::CheckDSTXes(int nHeight)
 {
     LOCK(cs_mapdstx);
-    std::map<uint256, CDarksendBroadcastTx>::iterator it = mapDSTX.begin();
+    std::map<uint256, CPrivateSendBroadcastTx>::iterator it = mapDSTX.begin();
     while(it != mapDSTX.end()) {
         if (it->second.IsExpired(nHeight)) {
             mapDSTX.erase(it++);
