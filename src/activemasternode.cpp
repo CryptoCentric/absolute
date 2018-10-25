@@ -86,7 +86,7 @@ void CActiveDeterministicMasternodeManager::Init()
         return;
     }
 
-    activeMasternodeInfo.outpoint = COutPoint(mnListEntry->proTxHash, mnListEntry->nCollateralIndex);
+    activeMasternodeInfo.outpoint = mnListEntry->collateralOutpoint;
     state = MASTERNODE_READY;
 }
 
@@ -104,7 +104,8 @@ void CActiveDeterministicMasternodeManager::UpdatedBlockTip(const CBlockIndex* p
     if (state == MASTERNODE_WAITING_FOR_PROTX) {
         Init();
     } else if (state == MASTERNODE_READY) {
-        if (!deterministicMNManager->HasValidMNAtBlock(pindexNew->GetBlockHash(), mnListEntry->proTxHash)) {
+        auto mnList = deterministicMNManager->GetListForBlock(pindexNew->GetBlockHash());
+        if (!mnList.IsMNValid(mnListEntry->proTxHash)) {
             // MN disappeared from MN list
             state = MASTERNODE_REMOVED;
             activeMasternodeInfo.outpoint.SetNull();
@@ -369,7 +370,7 @@ void CActiveLegacyMasternodeManager::ManageStateRemote()
             LogPrintf("CActiveLegacyMasternodeManager::ManageStateRemote -- %s: %s\n", GetStateString(), strNotCapableReason);
             return;
         }
-        auto dmn = deterministicMNManager->GetListAtChainTip().GetMN(infoMn.outpoint.hash);
+        auto dmn = deterministicMNManager->GetListAtChainTip().GetMNByCollateral(infoMn.outpoint);
         if (dmn) {
             if (dmn->pdmnState->addr != infoMn.addr) {
                 nState = ACTIVE_MASTERNODE_NOT_CAPABLE;
