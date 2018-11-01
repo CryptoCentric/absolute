@@ -41,7 +41,6 @@ extern void noui_connect();
 BasicTestingSetup::BasicTestingSetup(const std::string& chainName)
 {
         ECC_Start();
-        BLSInit();
         SetupEnvironment();
         SetupNetworking();
         InitSignatureCache();
