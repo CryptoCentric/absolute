@@ -219,7 +219,7 @@ public:
 
     void UpdatedBlockTip(const CBlockIndex *pindex, CConnman& connman);
 
-    void DoMaintenance() { CheckAndRemove(); }
+    void DoMaintenance();
 };
 
 #endif

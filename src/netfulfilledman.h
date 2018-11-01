@@ -46,7 +46,7 @@ public:
 
     std::string ToString() const;
 
-    void DoMaintenance() { CheckAndRemove(); }
+    void DoMaintenance();
 };
 
 #endif

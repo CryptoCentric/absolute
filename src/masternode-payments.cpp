@@ -6,6 +6,7 @@
 #include "activemasternode.h"
 #include "consensus/validation.h"
 #include "governance-classes.h"
+#include "init.h"
 #include "masternode-payments.h"
 #include "masternode-sync.h"
 #include "masternodeman.h"
@@ -1288,4 +1289,11 @@ void CMasternodePayments::UpdatedBlockTip(const CBlockIndex *pindex, CConnman& c
 
     CheckBlockVotes(nFutureBlock - 1);
     ProcessBlock(nFutureBlock, connman);
+}
+
+void CMasternodePayments::DoMaintenance()
+{
+    if (ShutdownRequested()) return;
+
+    CheckAndRemove();
 }

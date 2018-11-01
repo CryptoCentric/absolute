@@ -117,7 +117,7 @@ public:
 
     bool UpdateSentinelPing(int version);
 
-    void DoMaintenance(CConnman &connman) { ManageState(connman); }
+    void DoMaintenance(CConnman &connman);
 
 private:
     void ManageStateInitial(CConnman& connman);
