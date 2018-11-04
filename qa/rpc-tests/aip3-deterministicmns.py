@@ -59,7 +59,7 @@ class AIP3Test(BitcoinTestFramework):
         # Make sure we're below block 143 (which activates aip3)
         print("testing rejection of ProTx before aip3 activation")
         assert(self.nodes[0].getblockchaininfo()['blocks'] < 143)
-        aip3_deployment = self.nodes[0].getblockchaininfo()['bip9_softforks']['dip0003']
+        aip3_deployment = self.nodes[0].getblockchaininfo()['bip9_softforks']['aip0003']
         assert_equal(aip3_deployment['status'], 'defined')
 
         self.test_fail_create_protx(self.nodes[0])
@@ -101,19 +101,19 @@ class AIP3Test(BitcoinTestFramework):
         self.test_instantsend(10, 5)
 
         print("testing rejection of ProTx before aip3 activation (in states defined, started and locked_in)")
-        while self.nodes[0].getblockchaininfo()['bip9_softforks']['dip0003']['status'] == 'defined':
+        while self.nodes[0].getblockchaininfo()['bip9_softforks']['aip0003']['status'] == 'defined':
             self.nodes[0].generate(1)
         self.test_fail_create_protx(self.nodes[0])
-        while self.nodes[0].getblockchaininfo()['bip9_softforks']['dip0003']['status'] == 'started':
+        while self.nodes[0].getblockchaininfo()['bip9_softforks']['aip0003']['status'] == 'started':
             self.nodes[0].generate(1)
         self.test_fail_create_protx(self.nodes[0])
 
-        # prepare mn which should still be accepted later when aip3 activates (because it is funded before final activation)
+        # prepare mn which should still be accepted later when aip3 activates
         print("creating collateral for mn-before-aip3")
         before_aip3_mn = self.create_mn(self.nodes[0], mn_idx, 'mn-before-aip3')
         mn_idx += 1
 
-        while self.nodes[0].getblockchaininfo()['bip9_softforks']['dip0003']['status'] == 'locked_in':
+        while self.nodes[0].getblockchaininfo()['bip9_softforks']['aip0003']['status'] == 'locked_in':
             self.nodes[0].generate(1)
 
         # We have hundreds of blocks to sync here, give it more time
@@ -140,12 +140,12 @@ class AIP3Test(BitcoinTestFramework):
             time.sleep(1)
 
         print("testing if we can start a mn which was created before aip3 activation")
-        mns.append(before_aip3_mn)
-        self.write_mnconf(mns + [after_aip3_mn])
+        self.write_mnconf(mns + [before_aip3_mn, after_aip3_mn])
         self.restart_controller_node()
         self.force_finish_mnsync(self.nodes[0])
 
         print("start MN %s" % before_aip3_mn.alias)
+        mns.append(before_aip3_mn)
         self.start_mn(before_aip3_mn)
         self.wait_for_sporks()
         self.force_finish_mnsync_list(before_aip3_mn.node)
@@ -154,9 +154,17 @@ class AIP3Test(BitcoinTestFramework):
         self.wait_for_mnlists(mns)
         self.wait_for_mnlists_same()
 
-        # Test if nodes deny creating new non-ProTx MNs now
-        print("testing if MN start fails when using collateral which was created after aip3 activation")
-        self.start_alias(self.nodes[0], after_aip3_mn.alias, should_fail=True)
+        # Test if nodes still allow creating new non-ProTx MNs now
+        print("testing if MN start succeeds when using collateral which was created after aip3 activation")
+        print("start MN %s" % after_aip3_mn.alias)
+        mns.append(after_aip3_mn)
+        self.start_mn(after_aip3_mn)
+        self.wait_for_sporks()
+        self.force_finish_mnsync_list(after_aip3_mn.node)
+        self.start_alias(self.nodes[0], after_aip3_mn.alias)
+
+        self.wait_for_mnlists(mns)
+        self.wait_for_mnlists_same()
 
         first_upgrade_count = 5
         mns_after_upgrade = []
@@ -423,6 +431,15 @@ class AIP3Test(BitcoinTestFramework):
                 self.write_mnconf_line(mn, f)
 
     def start_alias(self, node, alias, should_fail=False):
+        # When generating blocks very fast, the logic in miner.cpp:UpdateTime might result in block times ahead of the real time
+        # This can easily accumulate to 30 seconds or more, which results in start-alias to fail as it expects the sigTime
+        # to be less or equal to the confirmation block time
+        # Solution is to sleep in this case.
+        lastblocktime = node.getblock(node.getbestblockhash())['time']
+        sleeptime = lastblocktime - time.time()
+        if sleeptime > 0:
+            time.sleep(sleeptime + 1) # +1 to be extra sure
+
         start_result = node.masternode('start-alias', alias)
         if not should_fail:
             assert_equal(start_result, {'result': 'successful', 'alias': alias})
