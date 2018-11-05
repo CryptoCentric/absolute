@@ -7,35 +7,35 @@
 #define PRIVATESENDCLIENT_H
 
 #include "masternode.h"
+#include "privatesend-util.h"
 #include "privatesend.h"
 #include "wallet/wallet.h"
-#include "privatesend-util.h"
 
 class CPrivateSendClientManager;
 class CConnman;
 
-static const int DENOMS_COUNT_MAX                   = 100;
+static const int DENOMS_COUNT_MAX = 100;
 
-static const int MIN_PRIVATESEND_SESSIONS           = 1;
-static const int MIN_PRIVATESEND_ROUNDS             = 2;
-static const int MIN_PRIVATESEND_AMOUNT             = 2;
-static const int MIN_PRIVATESEND_LIQUIDITY          = 0;
-static const int MAX_PRIVATESEND_SESSIONS           = 10;
-static const int MAX_PRIVATESEND_ROUNDS             = 16;
-static const int MAX_PRIVATESEND_AMOUNT             = MAX_MONEY / COIN;
-static const int MAX_PRIVATESEND_LIQUIDITY          = 100;
-static const int DEFAULT_PRIVATESEND_SESSIONS       = 4;
-static const int DEFAULT_PRIVATESEND_ROUNDS         = 4;
-static const int DEFAULT_PRIVATESEND_AMOUNT         = 1000;
-static const int DEFAULT_PRIVATESEND_LIQUIDITY      = 0;
+static const int MIN_PRIVATESEND_SESSIONS = 1;
+static const int MIN_PRIVATESEND_ROUNDS = 2;
+static const int MIN_PRIVATESEND_AMOUNT = 2;
+static const int MIN_PRIVATESEND_LIQUIDITY = 0;
+static const int MAX_PRIVATESEND_SESSIONS = 10;
+static const int MAX_PRIVATESEND_ROUNDS = 16;
+static const int MAX_PRIVATESEND_AMOUNT = MAX_MONEY / COIN;
+static const int MAX_PRIVATESEND_LIQUIDITY = 100;
+static const int DEFAULT_PRIVATESEND_SESSIONS = 4;
+static const int DEFAULT_PRIVATESEND_ROUNDS = 4;
+static const int DEFAULT_PRIVATESEND_AMOUNT = 1000;
+static const int DEFAULT_PRIVATESEND_LIQUIDITY = 0;
 
-static const bool DEFAULT_PRIVATESEND_MULTISESSION  = false;
+static const bool DEFAULT_PRIVATESEND_MULTISESSION = false;
 
 // Warn user if mixing in gui or try to create backup if mixing in daemon mode
 // when we have only this many keys left
 static const int PRIVATESEND_KEYS_THRESHOLD_WARNING = 100;
 // Stop mixing completely, it's too dangerous to continue when we have only this many keys left
-static const int PRIVATESEND_KEYS_THRESHOLD_STOP    = 50;
+static const int PRIVATESEND_KEYS_THRESHOLD_STOP = 50;
 
 // The main object for accessing mixing
 extern CPrivateSendClientManager privateSendClient;
@@ -50,17 +50,19 @@ private:
     int64_t nTimeCreated;
 
 public:
-    CPendingDsaRequest():
+    CPendingDsaRequest() :
         addr(CService()),
         dsa(CPrivateSendAccept()),
         nTimeCreated(0)
-    {}
+    {
+    }
 
-    CPendingDsaRequest(const CService& addr_, const CPrivateSendAccept& dsa_):
+    CPendingDsaRequest(const CService& addr_, const CPrivateSendAccept& dsa_) :
         addr(addr_),
         dsa(dsa_),
         nTimeCreated(GetTime())
-    {}
+    {
+    }
 
     CService GetAddr() { return addr; }
     CPrivateSendAccept GetDSA() { return dsa; }
@@ -109,14 +111,14 @@ private:
     bool StartNewQueue(CAmount nValueMin, CAmount nBalanceNeedsAnonymized, CConnman& connman);
 
     /// step 0: select denominated inputs and txouts
-    bool SelectDenominate(std::string& strErrorRet, std::vector< std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsRet);
+    bool SelectDenominate(std::string& strErrorRet, std::vector<std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsRet);
     /// step 1: prepare denominated inputs and outputs
-    bool PrepareDenominate(int nMinRounds, int nMaxRounds, std::string& strErrorRet, const std::vector< std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsIn, std::vector< std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsRet, bool fDryRun = false);
+    bool PrepareDenominate(int nMinRounds, int nMaxRounds, std::string& strErrorRet, const std::vector<std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsIn, std::vector<std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsRet, bool fDryRun = false);
     /// step 2: send denominated inputs and outputs prepared in step 1
-    bool SendDenominate(const std::vector< std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsIn, CConnman& connman);
+    bool SendDenominate(const std::vector<std::pair<CTxDSIn, CTxOut> >& vecPSInOutPairsIn, CConnman& connman);
 
     /// Get Masternode updates about the progress of mixing
-    bool CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNew, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID, int nSessionIDNew=0);
+    bool CheckPoolStateUpdate(PoolState nStateNew, int nEntriesCountNew, PoolStatusUpdate nStatusUpdate, PoolMessage nMessageID, int nSessionIDNew = 0);
     // Set the 'state' value, with some logging and capturing when the state changed
     void SetState(PoolState nStateNew);
 
@@ -142,7 +144,8 @@ public:
         txMyCollateral(),
         pendingDsaRequest(),
         keyHolderStorage()
-        {}
+    {
+    }
 
     void ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman);
 
@@ -155,7 +158,7 @@ public:
     bool GetMixingMasternodeInfo(masternode_info_t& mnInfoRet) const;
 
     /// Passively run mixing in the background according to the configuration in settings
-    bool DoAutomaticDenominating(CConnman& connman, bool fDryRun=false);
+    bool DoAutomaticDenominating(CConnman& connman, bool fDryRun = false);
 
     /// As a client, submit part of a future mixing transaction to a Masternode to start the process
     bool SubmitDenominate(CConnman& connman);
@@ -199,7 +202,7 @@ public:
     bool fEnablePrivateSend;
     bool fPrivateSendMultiSession;
 
-    int nCachedNumBlocks; //used for the overview screen
+    int nCachedNumBlocks;    //used for the overview screen
     bool fCreateAutoBackups; //builtin support for automatic backups
 
     CPrivateSendClientManager() :
@@ -217,7 +220,8 @@ public:
         fPrivateSendMultiSession(DEFAULT_PRIVATESEND_MULTISESSION),
         nCachedNumBlocks(std::numeric_limits<int>::max()),
         fCreateAutoBackups(true)
-        {}
+    {
+    }
 
     void ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman);
 
@@ -235,7 +239,7 @@ public:
     bool GetMixingMasternodesInfo(std::vector<masternode_info_t>& vecMnInfoRet) const;
 
     /// Passively run mixing in the background according to the configuration in settings
-    bool DoAutomaticDenominating(CConnman& connman, bool fDryRun=false);
+    bool DoAutomaticDenominating(CConnman& connman, bool fDryRun = false);
 
     void CheckTimeout();
 
@@ -246,7 +250,7 @@ public:
 
     void UpdatedSuccessBlock();
 
-    void UpdatedBlockTip(const CBlockIndex *pindex);
+    void UpdatedBlockTip(const CBlockIndex* pindex);
 
     void DoMaintenance(CConnman& connman);
 };
