@@ -1224,7 +1224,7 @@ class msg_reject(object):
             % (self.message, self.code, self.reason, self.data)
 
 # Helper function
-def wait_until(predicate, *, attempts=float('inf'), timeout=float('inf')):
+def wait_until(predicate, *, attempts=float('inf'), timeout=float('inf'), sleep=0.05):
     attempt = 0
     elapsed = 0
 
@@ -1233,8 +1233,8 @@ def wait_until(predicate, *, attempts=float('inf'), timeout=float('inf')):
             if predicate():
                 return True
         attempt += 1
-        elapsed += 0.05
-        time.sleep(0.05)
+        elapsed += sleep
+        time.sleep(sleep)
 
     return False
 
