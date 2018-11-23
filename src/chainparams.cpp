@@ -109,6 +109,62 @@ static CBlock FindPoVNETGenesisBlock(const Consensus::Params& params, const CBlo
     error("FindPoVNETGenesisBlock: could not find PoVNET genesis block for %s", PoVNETName);
     assert(false);
 }
+
+// this one is for testing only
+static Consensus::LLMQParams llmq10_60 = {
+        .type = Consensus::LLMQ_10_60,
+        .name = "llmq_10",
+        .size = 10,
+        .minSize = 6,
+        .threshold = 6,
+
+        .dkgInterval = 24, // one DKG per hour
+        .dkgPhaseBlocks = 2,
+        .dkgMiningWindowStart = 10, // dkgPhaseBlocks * 5 = after finalization
+        .dkgMiningWindowEnd = 18,
+};
+
+static Consensus::LLMQParams llmq50_60 = {
+        .type = Consensus::LLMQ_50_60,
+        .name = "llmq_50_60",
+        .size = 50,
+        .minSize = 40,
+        .threshold = 30,
+
+        .dkgInterval = 24, // one DKG per hour
+        .dkgPhaseBlocks = 2,
+        .dkgMiningWindowStart = 10, // dkgPhaseBlocks * 5 = after finalization
+        .dkgMiningWindowEnd = 18,
+};
+
+static Consensus::LLMQParams llmq400_60 = {
+        .type = Consensus::LLMQ_400_60,
+        .name = "llmq_400_51",
+        .size = 400,
+        .minSize = 300,
+        .threshold = 240,
+
+        .dkgInterval = 24 * 12, // one DKG every 12 hours
+        .dkgPhaseBlocks = 4,
+        .dkgMiningWindowStart = 20, // dkgPhaseBlocks * 5 = after finalization
+        .dkgMiningWindowEnd = 28,
+};
+
+// Used for deployment and min-proto-version signalling, so it needs a higher threshold
+static Consensus::LLMQParams llmq400_85 = {
+        .type = Consensus::LLMQ_400_85,
+        .name = "llmq_400_85",
+        .size = 400,
+        .minSize = 350,
+        .threshold = 340,
+
+        .dkgInterval = 24 * 24, // one DKG every 24 hours
+        .dkgPhaseBlocks = 4,
+        .dkgMiningWindowStart = 20, // dkgPhaseBlocks * 5 = after finalization
+        .dkgMiningWindowEnd = 48, // give it a larger mining window to make sure it is mined
+};
+
+
 /**
  * Main network
  */
@@ -184,7 +240,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nTimeout = 1561680000; // Friday, 28-Jun-19
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nWindowSize = 4032;
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nThreshold = 3226; // 80% of 4032
-		
+
 		// Deployment of AIP0003
         consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].bit = 3;
         consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nStartTime = 1593458430; // Monday, 29 June 2020 19:20:30 GMT
@@ -238,6 +294,11 @@ public:
         nExtCoinType = 5;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
+
+        // long living quorum params
+        consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
+        consensus.llmqs[Consensus::LLMQ_400_60] = llmq400_60;
+        consensus.llmqs[Consensus::LLMQ_400_85] = llmq400_85;
 
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;
@@ -535,6 +596,11 @@ public:
         // Testnet Absolute BIP44 coin type is '1' (All coin's testnet default)
         nExtCoinType = 1;
 
+        // long living quorum params
+        consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
+        consensus.llmqs[Consensus::LLMQ_400_60] = llmq400_60;
+        consensus.llmqs[Consensus::LLMQ_400_85] = llmq400_85;
+
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
@@ -692,7 +758,11 @@ public:
 
         // Regtest Absolute BIP44 coin type is '1' (All coin's testnet default)
         nExtCoinType = 1;
-   }
+
+        // long living quorum params
+        consensus.llmqs[Consensus::LLMQ_10_60] = llmq10_60;
+        consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
+    }
 
     void UpdateBIP9Parameters(Consensus::DeploymentPos d, int64_t nStartTime, int64_t nTimeout)
     {

@@ -110,6 +110,10 @@ bool ProcessSpecialTxsInBlock(const CBlock& block, const CBlockIndex* pindex, CV
         return false;
     }
 
+    if (!llmq::quorumBlockProcessor->ProcessBlock(block, pindex->pprev, state)) {
+        return false;
+    }
+
     return true;
 }
 
@@ -120,6 +124,10 @@ bool UndoSpecialTxsInBlock(const CBlock& block, const CBlockIndex* pindex)
         if (!UndoSpecialTx(tx, pindex)) {
             return false;
         }
+    }
+
+    if (!llmq::quorumBlockProcessor->UndoBlock(block, pindex)) {
+        return false;
     }
 
     if (!deterministicMNManager->UndoBlock(block, pindex)) {
