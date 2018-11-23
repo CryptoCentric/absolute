@@ -571,7 +571,7 @@ public:
         consensus.nHighSubsidyFactor = nHighSubsidyFactor;
     }
 };
-static CPoVNETParams *PoVNETParams;
+static CPoVNETParams *povNETParams;
 
 
 /**
@@ -716,8 +716,8 @@ CChainParams& Params(const std::string& chain)
     else if (chain == CBaseChainParams::TESTNET)
             return testNetParams;
     else if (chain == CBaseChainParams::POVNET) {
-            assert(PoVNETParams);
-            return *PoVNETParams;
+            assert(povNETParams);
+            return *povNETParams;
     } else if (chain == CBaseChainParams::REGTEST)
             return regTestParams;
     else
@@ -727,9 +727,9 @@ CChainParams& Params(const std::string& chain)
 void SelectParams(const std::string& network)
 {
     if (network == CBaseChainParams::POVNET) {
-        povNetParams = (CPoVNetParams*)new uint8_t[sizeof(CPoVNetParams)];
-        memset(povNetParams, 0, sizeof(PoVNetParams));
-        new (povNetParams) CPoVNetParams();
+        povNETParams = (CPoVNETParams*)new uint8_t[sizeof(CPoVNETParams)];
+        memset(povNETParams, 0, sizeof(CPoVNETParams));
+        new (povNETParams) CPoVNETParams();
     }
     SelectBaseParams(network);
     pCurrentParams = &Params(network);
@@ -747,6 +747,6 @@ void UpdateRegtestBudgetParameters(int nMasternodePaymentsStartBlock, int nBudge
 
 void UpdatePovnetSubsidyAndDiffParams(int nMinimumDifficultyBlocks, int nHighSubsidyBlocks, int nHighSubsidyFactor)
 {
-    assert(povNetParams);
-    PoVNETParams->UpdateSubsidyAndDiffParams(nMinimumDifficultyBlocks, nHighSubsidyBlocks, nHighSubsidyFactor);
+    assert(povNETParams);
+    povNETParams->UpdateSubsidyAndDiffParams(nMinimumDifficultyBlocks, nHighSubsidyBlocks, nHighSubsidyFactor);
 }
