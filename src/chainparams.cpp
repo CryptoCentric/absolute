@@ -246,6 +246,7 @@ public:
         vSporkAddresses = {"AYZX23zmfNQgCZtzq7JsWHRKKyuzzxYHfD"};
         nMinSporkKeys = 1;
         fBIP9CheckMasternodesUpgraded = true;
+        consensus.fLLMQAllowDummyCommitments = false;
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
@@ -403,6 +404,7 @@ public:
         vSporkAddresses = {"yQzniXSTqRwaEujSkvZicJsYZkt7wpa4NJ"};
         nMinSporkKeys = 1;
         fBIP9CheckMasternodesUpgraded = true;
+        consensus.fLLMQAllowDummyCommitments = true;
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
@@ -539,6 +541,7 @@ public:
         nMinSporkKeys = 1;
         // devnets are started with no blocks and no MN, so we can't check for upgraded MN (as there are none)
         fBIP9CheckMasternodesUpgraded = false;
+        consensus.fLLMQAllowDummyCommitments = true;
 
         checkpointData = (CCheckpointData) {
             boost::assign::map_list_of
@@ -656,6 +659,7 @@ public:
         nMinSporkKeys = 1;
         // regtest usually has no masternodes in most tests, so don't check for upgraged MNs
         fBIP9CheckMasternodesUpgraded = false;
+        consensus.fLLMQAllowDummyCommitments = true;
 
         checkpointData = (CCheckpointData){
             boost::assign::map_list_of
