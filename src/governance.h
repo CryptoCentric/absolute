@@ -449,6 +449,10 @@ private:
     void RequestOrphanObjects(CConnman& connman);
 
     void CleanOrphanObjects();
+
+    // TODO can be removed after full DIP3 deployment
+    unsigned int GetMinVoteTime();
+    void ClearPreDIP3Votes();
 };
 
 #endif

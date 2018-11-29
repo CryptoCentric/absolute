@@ -351,6 +351,9 @@ private:
     void ClearMasternodeVotes();
 
     void CheckOrphanVotes(CConnman& connman);
+
+    // TODO can be removed after DIP3 is fully deployed
+    std::vector<uint256> RemoveOldVotes(unsigned int nMinTime);
 };
 
 
