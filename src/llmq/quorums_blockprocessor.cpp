@@ -282,7 +282,7 @@ bool CQuorumBlockProcessor::IsCommitmentRequired(Consensus::LLMQType llmqType, c
         LOCK(cs_main);
         const auto& consensus = Params().GetConsensus();
         if (consensus.nTemporaryTestnetForkAIP3Height != 0 &&
-            pindexPrev->nHeight + 1 >= consensus.nTemporaryTestnetForkAIP3Height &&
+            pindexPrev->nHeight + 1 > consensus.nTemporaryTestnetForkAIP3Height &&
             pindexPrev->nHeight + 1 < consensus.nTemporaryTestnetForkHeight &&
             chainActive[consensus.nTemporaryTestnetForkAIP3Height]->GetBlockHash() == consensus.nTemporaryTestnetForkAIP3BlockHash) {
             allowMissingQc = true;
