@@ -94,9 +94,9 @@ MasternodeList::MasternodeList(const PlatformStyle* platformStyle, QWidget* pare
     contextMenuAIP3->addAction(copyProTxHashAction);
     contextMenuAIP3->addAction(copyCollateralOutpointAction);
     connect(ui->tableWidgetMasternodesAIP3, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenuAIP3(const QPoint&)));
-    connect(ui->tableWidgetMasternodesAIP3, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_extraInfoAIP3_clicked()));
-    connect(copyProTxHashAction, SIGNAL(triggered()), this, SLOT(on_copyProTxHash_clicked()));
-    connect(copyCollateralOutpointAction, SIGNAL(triggered()), this, SLOT(on_copyCollateralOutpoint_clicked()));
+    connect(ui->tableWidgetMasternodesAIP3, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(extraInfoAIP3_clicked()));
+    connect(copyProTxHashAction, SIGNAL(triggered()), this, SLOT(copyProTxHash_clicked()));
+    connect(copyCollateralOutpointAction, SIGNAL(triggered()), this, SLOT(copyCollateralOutpoint_clicked()));
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateNodeList()));
@@ -691,7 +691,7 @@ CDeterministicMNCPtr MasternodeList::GetSelectedAIP3MN()
     return mnList.GetUniquePropertyMN(addr);
 }
 
-void MasternodeList::on_extraInfoAIP3_clicked()
+void MasternodeList::extraInfoAIP3_clicked()
 {
     auto dmn = GetSelectedAIP3MN();
     if (!dmn) {
@@ -708,7 +708,7 @@ void MasternodeList::on_extraInfoAIP3_clicked()
     QMessageBox::information(this, strWindowtitle, strText);
 }
 
-void MasternodeList::on_copyProTxHash_clicked()
+void MasternodeList::copyProTxHash_clicked()
 {
     auto dmn = GetSelectedAIP3MN();
     if (!dmn) {
@@ -718,7 +718,7 @@ void MasternodeList::on_copyProTxHash_clicked()
     QApplication::clipboard()->setText(QString::fromStdString(dmn->proTxHash.ToString()));
 }
 
-void MasternodeList::on_copyCollateralOutpoint_clicked()
+void MasternodeList::copyCollateralOutpoint_clicked()
 {
     auto dmn = GetSelectedAIP3MN();
     if (!dmn) {
