@@ -78,6 +78,11 @@ MasternodeList::MasternodeList(const PlatformStyle* platformStyle, QWidget* pare
     ui->tableWidgetMasternodesAIP3->setColumnWidth(6, columnPayeeWidth);
     ui->tableWidgetMasternodesAIP3->setColumnWidth(7, columnOperatorRewardWidth);
 
+    // dummy column for proTxHash
+    // TODO use a proper table model for the MN list
+    ui->tableWidgetMasternodesAIP3->insertColumn(8);
+    ui->tableWidgetMasternodesAIP3->setColumnHidden(8, true);
+
     ui->tableWidgetMyMasternodes->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidgetMasternodesAIP3->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -462,6 +467,8 @@ void MasternodeList::updateAIP3List()
             if (!strToFilter.contains(strCurrentFilterAIP3)) return;
         }
 
+        QTableWidgetItem* proTxHashItem = new QTableWidgetItem(QString::fromStdString(dmn->proTxHash.ToString()));
+
         ui->tableWidgetMasternodesAIP3->insertRow(0);
         ui->tableWidgetMasternodesAIP3->setItem(0, 0, addressItem);
         ui->tableWidgetMasternodesAIP3->setItem(0, 1, statusItem);
@@ -471,6 +478,7 @@ void MasternodeList::updateAIP3List()
         ui->tableWidgetMasternodesAIP3->setItem(0, 5, nextPaymentItem);
         ui->tableWidgetMasternodesAIP3->setItem(0, 6, payeeItem);
         ui->tableWidgetMasternodesAIP3->setItem(0, 7, operatorRewardItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 8, proTxHashItem);
     });
 
     ui->countLabelAIP3->setText(QString::number(ui->tableWidgetMasternodesAIP3->rowCount()));
@@ -670,7 +678,7 @@ void MasternodeList::ShowQRCode(std::string strAlias)
 
 CDeterministicMNCPtr MasternodeList::GetSelectedAIP3MN()
 {
-    std::string strAddress;
+    std::string strProTxHash;
     {
         LOCK(cs_aip3list);
 
@@ -681,14 +689,14 @@ CDeterministicMNCPtr MasternodeList::GetSelectedAIP3MN()
 
         QModelIndex index = selected.at(0);
         int nSelectedRow = index.row();
-        strAddress = ui->tableWidgetMasternodesAIP3->item(nSelectedRow, 0)->text().toStdString();
+        strProTxHash = ui->tableWidgetMasternodesAIP3->item(nSelectedRow, 8)->text().toStdString();
     }
-    CService addr;
-    if (!Lookup(strAddress.c_str(), addr, Params().GetDefaultPort(), false)) {
-        return nullptr;
-    }
+
+    uint256 proTxHash;
+    proTxHash.SetHex(strProTxHash);
+
     auto mnList = deterministicMNManager->GetListAtChainTip();
-    return mnList.GetUniquePropertyMN(addr);
+    return mnList.GetMN(proTxHash);
 }
 
 void MasternodeList::extraInfoAIP3_clicked()
