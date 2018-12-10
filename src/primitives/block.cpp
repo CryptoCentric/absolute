@@ -6,15 +6,17 @@
 #include "primitives/block.h"
 
 #include "hash.h"
+#include "streams.h"
 #include "tinyformat.h"
 #include "utilstrencodings.h"
 #include "crypto/common.h"
 
 uint256 CBlockHeader::GetHash() const
 {
-    uint256 targetHash;
-    lyra2re2_hash(BEGIN(nVersion), BEGIN(targetHash));
-    return targetHash;
+    std::vector<unsigned char> vch(80);
+    CVectorWriter ss(SER_NETWORK, PROTOCOL_VERSION, vch, 0);
+    ss << *this;
+    return lyra2re2_hash((const char *)vch.data(), (const char *)vch.data() + vch.size());
 }
 
 std::string CBlock::ToString() const
