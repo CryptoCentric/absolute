@@ -48,11 +48,16 @@ BasicTestingSetup::BasicTestingSetup(const std::string& chainName)
         fPrintToDebugLog = false; // don't want to write to debug.log file
         fCheckBlockIndex = true;
         SelectParams(chainName);
+        evoDb = new CEvoDB(1 << 20, true, true);
+        deterministicMNManager = new CDeterministicMNManager(*evoDb);
         noui_connect();
 }
 
 BasicTestingSetup::~BasicTestingSetup()
 {
+        delete deterministicMNManager;
+        delete evoDb;
+
         ECC_Stop();
         g_connman.reset();
 }
@@ -68,10 +73,8 @@ TestingSetup::TestingSetup(const std::string& chainName) : BasicTestingSetup(cha
         boost::filesystem::create_directories(pathTemp);
         ForceSetArg("-datadir", pathTemp.string());
         mempool.setSanityCheck(1.0);
-        evoDb = new CEvoDB(1 << 20, true, true);
         pblocktree = new CBlockTreeDB(1 << 20, true);
         pcoinsdbview = new CCoinsViewDB(1 << 23, true);
-        deterministicMNManager = new CDeterministicMNManager(*evoDb);
         llmq::InitLLMQSystem(*evoDb);
         pcoinsTip = new CCoinsViewCache(pcoinsdbview);
         InitBlockIndex(chainparams);
@@ -96,10 +99,8 @@ TestingSetup::~TestingSetup()
         UnloadBlockIndex();
         delete pcoinsTip;
         llmq::DestroyLLMQSystem();
-        delete deterministicMNManager;
         delete pcoinsdbview;
         delete pblocktree;
-        delete evoDb;
         boost::filesystem::remove_all(pathTemp);
 }
 
