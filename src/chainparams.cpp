@@ -287,6 +287,7 @@ public:
         consensus.nBudgetPaymentsWindowBlocks = 100;
 
         consensus.nSuperblockStartBlock = 450;
+        consensus.nSuperblockStartHash = uint256(); // do not check this on testnet
         consensus.nSuperblockCycle = 150; // Superblocks can be issued hourly on testnet
         consensus.nGovernanceMinQuorum = 1;
         consensus.nGovernanceFilterElements = 500;
