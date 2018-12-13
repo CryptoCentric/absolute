@@ -385,10 +385,10 @@ public:
         // Testnet Absolute BIP44 coin type is '1' (All coin's testnet default)
         nExtCoinType = 1;
 
-        // This is temporary until we reset testnet for retesting of the full AIP3 deployment
-        consensus.nTemporaryTestnetForkAIP3Height = 1000;
-        consensus.nTemporaryTestnetForkHeight = 1100;
-        consensus.nTemporaryTestnetForkAIP3BlockHash.SetHex("00000048e6e71d4bd90e7c456dcb94683ae832fcad13e1760d8283f7e89f332f");
+        // long living quorum params
+        consensus.llmqs[Consensus::LLMQ_50_60] = llmq50_60;
+        consensus.llmqs[Consensus::LLMQ_400_60] = llmq400_60;
+        consensus.llmqs[Consensus::LLMQ_400_85] = llmq400_85;
 
         fMiningRequiresPeers = true;
         fDefaultConsistencyChecks = false;

@@ -157,11 +157,6 @@ struct Params {
 
     std::map<LLMQType, LLMQParams> llmqs;
     bool fLLMQAllowDummyCommitments;
-
-    // This is temporary until we reset testnet for retesting of the full DIP3 deployment
-    int nTemporaryTestnetForkAIP3Height{0};
-    uint256 nTemporaryTestnetForkAIP3BlockHash;
-    int nTemporaryTestnetForkHeight{0};
 };
 } // namespace Consensus
 
