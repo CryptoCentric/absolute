@@ -171,12 +171,7 @@ void CSporkManager::ProcessSpork(CNode* pfrom, const std::string& strCommand, CD
             }
         }
 
-        if(!spork.CheckSignature(sporkPubKeyID, IsSporkActive(SPORK_6_NEW_SIGS))) {
-            LOCK(cs_main);
-            LogPrintf("CSporkManager::ProcessSpork -- ERROR: invalid signature\n");
-            Misbehaving(pfrom->GetId(), 100);
-            return;
-        }
+
 
         {
             LOCK(cs); // make sure to not lock this together with cs_main
@@ -235,7 +230,13 @@ bool CSporkManager::UpdateSpork(int nSporkID, int64_t nValue, CConnman& connman)
 {
     CSporkMessage spork = CSporkMessage(nSporkID, nValue, GetAdjustedTime());
 
-    if(spork.Sign(sporkPrivKey, IsSporkActive(SPORK_6_NEW_SIGS))) {
+    bool fSpork6IsActive = IsSporkActive(SPORK_6_NEW_SIGS);
+    if(spork.Sign(sporkPrivKey, fSpork6IsActive)) {
+        CKeyID keyIDSigner;
+        if (!spork.GetSignerKeyID(keyIDSigner, fSpork6IsActive) || !setSporkPubKeyIDs.count(keyIDSigner)) {
+            LogPrintf("CSporkManager::UpdateSpork: failed to find keyid for private key\n");
+            return false;
+        }
         spork.Relay(connman);
         LOCK(cs);
         mapSporksByHash[spork.GetHash()] = spork;
@@ -407,6 +408,10 @@ uint256 CSporkMessage::GetSignatureHash() const
 
 bool CSporkMessage::Sign(const CKey& key, bool fSporkSixActive)
 {
+    if (!key.IsValid()) {
+        LogPrintf("CSporkMessage::Sign -- signing key is not valid\n");
+        return false;
+    }
     CKeyID pubKeyId = key.GetPubKey().GetID();
     std::string strError = "";
 
@@ -456,8 +461,14 @@ bool CSporkMessage::CheckSignature(const CKeyID& pubKeyId, bool fSporkSixActive)
         std::string strMessage = std::to_string(nSporkID) + std::to_string(nValue) + std::to_string(nTimeSigned);
 
         if (!CMessageSigner::VerifyMessage(pubKeyId, vchSig, strMessage, strError)){
-            LogPrintf("CSporkMessage::CheckSignature -- VerifyMessage() failed, error: %s\n", strError);
-            return false;
+            // Note: unlike for other messages we have to check for new format even with SPORK_6_NEW_SIGS
+            // inactive because SPORK_6_NEW_SIGS default is OFF and it is not the first spork to sync
+            // (and even if it would, spork order can't be guaranteed anyway).
+            uint256 hash = GetSignatureHash();
+            if (!CHashSigner::VerifyHash(hash, pubKeyId, vchSig, strError)) {
+                LogPrintf("CSporkMessage::CheckSignature -- VerifyHash() failed, error: %s\n", strError);
+                return false;
+            }
         }
     }
 
