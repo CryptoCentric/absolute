@@ -307,8 +307,8 @@ Clone the git repositories for Absolute Core and Gitian.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/absolute-community/absolute
-git clone https://github.com/absolute-community//gitian.signatures.git
+git clone https://github.com/absolute-community/absolute.git
+git clone https://github.com/absolute-community/gitian.signatures.git
 ```
 
 Setting up the Gitian image
