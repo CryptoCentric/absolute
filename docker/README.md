@@ -1,8 +1,8 @@
 This docker image is built and pushed from travis. It does not contain any default configs or any
 special startup scripts. This is to keep it simple and to not copy too much logic from the
-official/supported Docker Images found at https://hub.docker.com/r/absolutecoin/absolute/
+official/supported Docker Images found at https://hub.docker.com/r/absolutecommunity/docker-absoluted/
 
 The image is mostly used for devops purposes, e.g. for testnet/povnet deployments. Regular users
 should use the official images instead of this one.
 
-**NOTE: Please update the image description at https://hub.docker.com/r/absolutecoin/absolute/ when changing the above text**
+**NOTE: Please update the image description at https://hub.docker.com/r/absolutecommunity/docker-absoluted/ when changing the above text**
