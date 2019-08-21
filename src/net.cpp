@@ -1777,7 +1777,7 @@ void CConnman::ThreadOpenConnections()
             if (!addr.IsValid() || setConnected.count(addr.GetGroup()))
                 break;
 
-            // if we selected a local address, restart (local addresses are allowed in regtest and devnet)
+            // if we selected a local address, restart (local addresses are allowed in regtest and povnet)
             bool fAllowLocal = Params().AllowMultiplePorts() && addrConnect.GetPort() != GetListenPort();
             if (!fAllowLocal && IsLocal(addrConnect))
                 break;

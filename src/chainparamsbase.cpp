@@ -19,7 +19,7 @@ void AppendParamsHelpMessages(std::string& strUsage, bool debugHelp)
 {
     strUsage += HelpMessageGroup(_("Chain selection options:"));
     strUsage += HelpMessageOpt("-testnet", _("Use the test chain"));
-    strUsage += HelpMessageOpt("-devnet=<name>", _("Use devnet chain with provided name"));
+    strUsage += HelpMessageOpt("-povnet=<name>", _("Use povnet chain with provided name"));
     if (debugHelp) {
         strUsage += HelpMessageOpt("-regtest", "Enter regression test mode, which uses a special chain in which blocks can be solved instantly. "
                                    "This is intended for regression testing tools and app development.");
@@ -137,10 +137,10 @@ std::string ChainNameFromCommandLine()
 
 std::string GetPoVNETName()
 {
-    // This function should never be called for non-devnets
+    // This function should never be called for non-povnets
     assert(IsArgSet("-povnet"));
-    std::string devNetName = GetArg("-povnet", "");
-    return "povnet" + (devNetName.empty() ? "" : "-" + devNetName);
+    std::string povNetName = GetArg("-povnet", "");
+    return "povnet" + (povNetName.empty() ? "" : "-" + povNetName);
 }
 
 bool AreBaseParamsConfigured()

@@ -3325,21 +3325,21 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
                         break;
                     }
                     pBestIndex = pindex;
-                    bool isPrevDevnetGenesisBlock = false;
-                    if (!consensusParams.hashDevnetGenesisBlock.IsNull() &&
+                    bool isPrevPovnetGenesisBlock = false;
+                    if (!consensusParams.hashPovnetGenesisBlock.IsNull() &&
                         pindex->pprev != nullptr &&
-                        pindex->pprev->GetBlockHash() == consensusParams.hashDevnetGenesisBlock) {
-                        // even though the devnet genesis block was never transferred through the wire and thus not
+                        pindex->pprev->GetBlockHash() == consensusParams.hashPovnetGenesisBlock) {
+                        // even though the povnet genesis block was never transferred through the wire and thus not
                         // appear anywhere in the node state where we track what other nodes have or not have, we can
-                        // assume that the other node already knows the devnet genesis block
-                        isPrevDevnetGenesisBlock = true;
+                        // assume that the other node already knows the povnet genesis block
+                        isPrevPovnetGenesisBlock = true;
                     }
                     if (fFoundStartingHeader) {
                         // add this to the headers message
                         vHeaders.push_back(pindex->GetBlockHeader());
                     } else if (PeerHasHeader(&state, pindex)) {
                         continue; // keep looking for the first new block
-                    } else if (pindex->pprev == NULL || PeerHasHeader(&state, pindex->pprev) || isPrevDevnetGenesisBlock) {
+                    } else if (pindex->pprev == NULL || PeerHasHeader(&state, pindex->pprev) || isPrevPovnetGenesisBlock) {
                         // Peer doesn't have this header but they do have the prior one.
                         // Start sending headers.
                         fFoundStartingHeader = true;

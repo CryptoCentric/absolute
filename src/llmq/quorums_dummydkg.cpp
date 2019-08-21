@@ -515,7 +515,7 @@ std::vector<bool> CDummyDKG::GetValidMembers(Consensus::LLMQType llmqType, const
 }
 
 // The returned secret key vector is NOT SECURE AT ALL!!
-// It is known by everyone. This is only for testnet/devnet/regtest, so this is fine. Also, we won't do any meaningful
+// It is known by everyone. This is only for testnet/povnet/regtest, so this is fine. Also, we won't do any meaningful
 // things with the commitments. This is only needed to make the final commitments validate
 BLSSecretKeyVector CDummyDKG::BuildDeterministicSvec(Consensus::LLMQType llmqType, const uint256& quorumHash)
 {

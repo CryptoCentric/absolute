@@ -22,7 +22,7 @@ class CConnman;
 /**
  * Implementation of an insecure dummy DKG
  *
- * This is only used on testnet/devnet/regtest and will NEVER be used on
+ * This is only used on testnet/povnet/regtest and will NEVER be used on
  * mainnet. It is NOT SECURE AT ALL! It will actually be removed later when the real DKG is introduced.
  *
  * It works by using a deterministic secure vector as the secure polynomial. Everyone can calculate this
@@ -75,7 +75,7 @@ public:
     }
 };
 
-// This message is only allowed on testnet/devnet/regtest
+// This message is only allowed on testnet/povnet/regtest
 // If any peer tries to send this message on mainnet, it is banned immediately
 // It is used to test commitments on testnet without actually running a full-blown DKG.
 class CDummyCommitment
