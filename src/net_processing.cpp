@@ -423,7 +423,7 @@ void MaybeSetPeerAsAnnouncingHeaderAndIDs(NodeId nodeid, CConnman& connman) {
             bool fAnnounceUsingCMPCTBLOCK = false;
             uint64_t nCMPCTBLOCKVersion = 1;
             if (lNodesAnnouncingHeaderAndIDs.size() >= 3) {
-                // As per BIP152, we only get 3 of our peers to announce
+                // As per AIP152, we only get 3 of our peers to announce
                 // blocks using compact encodings.
                 connman.ForNode(lNodesAnnouncingHeaderAndIDs.front(), [&connman, fAnnounceUsingCMPCTBLOCK, nCMPCTBLOCKVersion](CNode* pnodeStop){
                     connman.PushMessage(pnodeStop, CNetMsgMaker(pnodeStop->GetSendVersion()).Make(NetMsgType::SENDCMPCT, fAnnounceUsingCMPCTBLOCK, nCMPCTBLOCKVersion));
@@ -916,12 +916,12 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
     case MSG_BLOCK:
         return mapBlockIndex.count(inv.hash);
 
-    /* 
+    /*
         Absolute Related Inventory Messages
 
         --
 
-        We shouldn't update the sync times for each of the messages when we already have it. 
+        We shouldn't update the sync times for each of the messages when we already have it.
         We're going to be asking many nodes upfront for the full inventory list, so we'll get duplicates of these.
         We want to only update the time on new hits, so that we can time out appropriately if needed.
     */
@@ -1339,6 +1339,19 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         return true;
     }
 
+    // BEGIN TEMPORARY CODE
+    bool fAIP0003Active;
+    {
+        LOCK(cs_main);
+        fAIP0003Active = VersionBitsState(chainActive.Tip(), chainparams.GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+    }
+    // TODO delete this in next release after v13
+    int nMinPeerProtoVersion = MIN_PEER_PROTO_VERSION;
+    if (fAIP0003Active) {
+        nMinPeerProtoVersion = MIN_PEER_PROTO_VERSION_AIP3;
+    }
+    // END TEMPORARY CODE
+
     if (!(pfrom->GetLocalServices() & NODE_BLOOM) &&
               (strCommand == NetMsgType::FILTERLOAD ||
                strCommand == NetMsgType::FILTERADD))
@@ -1417,12 +1430,12 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return false;
         }
 
-        if (nVersion < MIN_PEER_PROTO_VERSION)
+        if (nVersion < nMinPeerProtoVersion)
         {
             // disconnect from peers older than this proto version
             LogPrintf("peer=%d using obsolete version %i; disconnecting\n", pfrom->id, nVersion);
             connman.PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
-                               strprintf("Version must be %d or greater", MIN_PEER_PROTO_VERSION)));
+                               strprintf("Version must be %d or greater", nMinPeerProtoVersion)));
             pfrom->fDisconnect = true;
             return false;
         }
@@ -1562,6 +1575,17 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
     // At this point, the outgoing message serialization version can't change.
     const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
+
+    // BEGIN TEMPORARY CODE
+    if (pfrom->nVersion < nMinPeerProtoVersion) {
+        // disconnect from peers with version < 70211 after AIP3 has activated through the AIP9 deployment
+        LogPrintf("peer=%d using obsolete version %i after AIP3 activation; disconnecting\n", pfrom->id, pfrom->GetSendVersion());
+        connman.PushMessage(pfrom, msgMaker.Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
+                strprintf("Version must be %d or greater", nMinPeerProtoVersion)));
+        pfrom->fDisconnect = true;
+        return false;
+    }
+    // END TEMPORARY CODE
 
     if (strCommand == NetMsgType::VERACK)
     {
@@ -2426,7 +2450,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 // 3. the block is otherwise invalid (eg invalid coinbase,
                 //    block is too big, too many legacy sigops, etc).
                 // So if CheckBlock failed, #3 is the only possibility.
-                // Under BIP 152, we don't DoS-ban unless proof of work is
+                // Under AIP 152, we don't DoS-ban unless proof of work is
                 // invalid (we don't require all the stateless checks to have
                 // been run).  This is handled below, so just treat this as
                 // though the block was successfully read, and rely on the
@@ -2436,7 +2460,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 fBlockRead = true;
                 // mapBlockSource is only used for sending reject messages and DoS scores,
                 // so the race between here and cs_main in ProcessNewBlock is fine.
-                // BIP 152 permits peers to relay compact blocks after validating
+                // AIP 152 permits peers to relay compact blocks after validating
                 // the header only; we should not punish peers if the block turns
                 // out to be invalid.
                 mapBlockSource.emplace(resp.blockhash, std::make_pair(pfrom->GetId(), false));
@@ -2678,7 +2702,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
     else if (strCommand == NetMsgType::PING)
     {
-        if (pfrom->nVersion > BIP0031_VERSION)
+        if (pfrom->nVersion > AIP0031_VERSION)
         {
             uint64_t nonce = 0;
             vRecv >> nonce;
@@ -3106,7 +3130,7 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
             }
             pto->fPingQueued = false;
             pto->nPingUsecStart = GetTimeMicros();
-            if (pto->nVersion > BIP0031_VERSION) {
+            if (pto->nVersion > AIP0031_VERSION) {
                 pto->nPingNonceSent = nonce;
                 connman.PushMessage(pto, msgMaker.Make(NetMsgType::PING, nonce));
             } else {
@@ -3372,7 +3396,7 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
                 if (!pto->fRelayTxes) pto->setInventoryTxToSend.clear();
             }
 
-            // Respond to BIP35 mempool requests
+            // Respond to AIP35 mempool requests
             if (fSendTrickle && pto->fSendMempool) {
                 auto vtxinfo = mempool.infoAll();
                 pto->fSendMempool = false;
