@@ -36,7 +36,7 @@ if [ "$BUILD_TARGET" = "arm-linux" ]; then
   export DEP_OPTS="NO_QT=1"
   export CHECK_DOC=1
   export BITCOIN_CONFIG="--enable-glibc-back-compat --enable-reduce-exports"
-  elif [ "$BUILD_TARGET" = "win32" ]; then
+elif [ "$BUILD_TARGET" = "win32" ]; then
   export HOST=i686-w64-mingw32
   export DPKG_ADD_ARCH="i386"
   export DEP_OPTS="NO_QT=1"
