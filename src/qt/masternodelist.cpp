@@ -69,17 +69,17 @@ MasternodeList::MasternodeList(const PlatformStyle* platformStyle, QWidget* pare
     ui->tableWidgetMasternodes->setColumnWidth(3, columnActiveWidth);
     ui->tableWidgetMasternodes->setColumnWidth(4, columnLastSeenWidth);
 
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(0, columnAddressWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(1, columnStatusWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(2, columnPoSeScoreWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(3, columnRegisteredWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(4, columnLastPaidWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(5, columnNextPaymentWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(6, columnPayeeWidth);
-    ui->tableWidgetMasternodesDIP3->setColumnWidth(7, columnOperatorRewardWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(0, columnAddressWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(1, columnStatusWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(2, columnPoSeScoreWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(3, columnRegisteredWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(4, columnLastPaidWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(5, columnNextPaymentWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(6, columnPayeeWidth);
+    ui->tableWidgetMasternodesAIP3->setColumnWidth(7, columnOperatorRewardWidth);
 
     ui->tableWidgetMyMasternodes->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->tableWidgetMasternodesDIP3->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tableWidgetMasternodesAIP3->setContextMenuPolicy(Qt::CustomContextMenu);
 
     QAction* startAliasAction = new QAction(tr("Start alias"), this);
     contextMenu = new QMenu();
@@ -90,26 +90,26 @@ MasternodeList::MasternodeList(const PlatformStyle* platformStyle, QWidget* pare
 
     QAction* copyProTxHashAction = new QAction(tr("Copy ProTx Hash"), this);
     QAction* copyCollateralOutpointAction = new QAction(tr("Copy Collateral Outpoint"), this);
-    contextMenuDIP3 = new QMenu();
-    contextMenuDIP3->addAction(copyProTxHashAction);
-    contextMenuDIP3->addAction(copyCollateralOutpointAction);
-    connect(ui->tableWidgetMasternodesDIP3, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenuDIP3(const QPoint&)));
-    connect(ui->tableWidgetMasternodesDIP3, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_extraInfoDIP3_clicked()));
+    contextMenuAIP3 = new QMenu();
+    contextMenuAIP3->addAction(copyProTxHashAction);
+    contextMenuAIP3->addAction(copyCollateralOutpointAction);
+    connect(ui->tableWidgetMasternodesAIP3, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenuAIP3(const QPoint&)));
+    connect(ui->tableWidgetMasternodesAIP3, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_extraInfoAIP3_clicked()));
     connect(copyProTxHashAction, SIGNAL(triggered()), this, SLOT(on_copyProTxHash_clicked()));
     connect(copyCollateralOutpointAction, SIGNAL(triggered()), this, SLOT(on_copyCollateralOutpoint_clicked()));
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateNodeList()));
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMyNodeList()));
-    connect(timer, SIGNAL(timeout()), this, SLOT(updateDIP3List()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateAIP3List()));
     timer->start(1000);
 
     fFilterUpdated = false;
-    fFilterUpdatedDIP3 = false;
+    fFilterUpdatedAIP3 = false;
     nTimeFilterUpdated = GetTime();
-    nTimeFilterUpdatedDIP3 = GetTime();
+    nTimeFilterUpdatedAIP3 = GetTime();
     updateNodeList();
-    updateDIP3List();
+    updateAIP3List();
 }
 
 MasternodeList::~MasternodeList()
@@ -137,10 +137,10 @@ void MasternodeList::showContextMenu(const QPoint& point)
     if (item) contextMenu->exec(QCursor::pos());
 }
 
-void MasternodeList::showContextMenuDIP3(const QPoint& point)
+void MasternodeList::showContextMenuAIP3(const QPoint& point)
 {
-    QTableWidgetItem* item = ui->tableWidgetMasternodesDIP3->itemAt(point);
-    if (item) contextMenuDIP3->exec(QCursor::pos());
+    QTableWidgetItem* item = ui->tableWidgetMasternodesAIP3->itemAt(point);
+    if (item) contextMenuAIP3->exec(QCursor::pos());
 }
 
 void MasternodeList::StartAlias(std::string strAlias)
@@ -373,35 +373,35 @@ void MasternodeList::updateNodeList()
     ui->tableWidgetMasternodes->setSortingEnabled(true);
 }
 
-void MasternodeList::updateDIP3List()
+void MasternodeList::updateAIP3List()
 {
-    TRY_LOCK(cs_dip3list, fLockAcquired);
+    TRY_LOCK(cs_aip3list, fLockAcquired);
     if (!fLockAcquired) return;
 
     static int64_t nTimeListUpdated = GetTime();
 
     // to prevent high cpu usage update only once in MASTERNODELIST_UPDATE_SECONDS seconds
     // or MASTERNODELIST_FILTER_COOLDOWN_SECONDS seconds after filter was last changed
-    int64_t nSecondsToWait = fFilterUpdatedDIP3
-                             ? nTimeFilterUpdatedDIP3 - GetTime() + MASTERNODELIST_FILTER_COOLDOWN_SECONDS
+    int64_t nSecondsToWait = fFilterUpdatedAIP3
+                             ? nTimeFilterUpdatedAIP3 - GetTime() + MASTERNODELIST_FILTER_COOLDOWN_SECONDS
                              : nTimeListUpdated - GetTime() + MASTERNODELIST_UPDATE_SECONDS;
 
-    if (fFilterUpdatedDIP3) {
+    if (fFilterUpdatedAIP3) {
         ui->countLabel->setText(QString::fromStdString(strprintf("Please wait... %d", nSecondsToWait)));
     }
     if (nSecondsToWait > 0) return;
 
     nTimeListUpdated = GetTime();
-    fFilterUpdatedDIP3 = false;
+    fFilterUpdatedAIP3 = false;
 
     QString strToFilter;
-    ui->countLabelDIP3->setText("Updating...");
-    ui->tableWidgetMasternodesDIP3->setSortingEnabled(false);
-    ui->tableWidgetMasternodesDIP3->clearContents();
-    ui->tableWidgetMasternodesDIP3->setRowCount(0);
+    ui->countLabelAIP3->setText("Updating...");
+    ui->tableWidgetMasternodesAIP3->setSortingEnabled(false);
+    ui->tableWidgetMasternodesAIP3->clearContents();
+    ui->tableWidgetMasternodesAIP3->setRowCount(0);
 
     if (deterministicMNManager->IsDeterministicMNsSporkActive()) {
-        ui->dip3NoteLabel->setVisible(false);
+        ui->aip3NoteLabel->setVisible(false);
     }
 
     auto mnList = deterministicMNManager->GetListAtChainTip();
@@ -450,7 +450,7 @@ void MasternodeList::updateDIP3List()
         }
         QTableWidgetItem* operatorRewardItem = new QTableWidgetItem(operatorRewardStr);
 
-        if (strCurrentFilterDIP3 != "") {
+        if (strCurrentFilterAIP3 != "") {
             strToFilter = addressItem->text() + " " +
                           statusItem->text() + " " +
                           PoSeScoreItem->text() + " " +
@@ -459,22 +459,22 @@ void MasternodeList::updateDIP3List()
                           nextPaymentItem->text() + " " +
                           payeeItem->text() + " " +
                           operatorRewardItem->text();
-            if (!strToFilter.contains(strCurrentFilterDIP3)) return;
+            if (!strToFilter.contains(strCurrentFilterAIP3)) return;
         }
 
-        ui->tableWidgetMasternodesDIP3->insertRow(0);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 0, addressItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 1, statusItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 2, PoSeScoreItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 3, registeredItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 4, lastPaidItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 5, nextPaymentItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 6, payeeItem);
-        ui->tableWidgetMasternodesDIP3->setItem(0, 7, operatorRewardItem);
+        ui->tableWidgetMasternodesAIP3->insertRow(0);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 0, addressItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 1, statusItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 2, PoSeScoreItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 3, registeredItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 4, lastPaidItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 5, nextPaymentItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 6, payeeItem);
+        ui->tableWidgetMasternodesAIP3->setItem(0, 7, operatorRewardItem);
     });
 
-    ui->countLabelDIP3->setText(QString::number(ui->tableWidgetMasternodesDIP3->rowCount()));
-    ui->tableWidgetMasternodesDIP3->setSortingEnabled(true);
+    ui->countLabelAIP3->setText(QString::number(ui->tableWidgetMasternodesAIP3->rowCount()));
+    ui->tableWidgetMasternodesAIP3->setSortingEnabled(true);
 }
 
 void MasternodeList::on_filterLineEdit_textChanged(const QString& strFilterIn)
@@ -485,12 +485,12 @@ void MasternodeList::on_filterLineEdit_textChanged(const QString& strFilterIn)
     ui->countLabel->setText(QString::fromStdString(strprintf("Please wait... %d", MASTERNODELIST_FILTER_COOLDOWN_SECONDS)));
 }
 
-void MasternodeList::on_filterLineEditDIP3_textChanged(const QString& strFilterIn)
+void MasternodeList::on_filterLineEditAIP3_textChanged(const QString& strFilterIn)
 {
-    strCurrentFilterDIP3 = strFilterIn;
-    nTimeFilterUpdatedDIP3 = GetTime();
-    fFilterUpdatedDIP3 = true;
-    ui->countLabelDIP3->setText(QString::fromStdString(strprintf("Please wait... %d", MASTERNODELIST_FILTER_COOLDOWN_SECONDS)));
+    strCurrentFilterAIP3 = strFilterIn;
+    nTimeFilterUpdatedAIP3 = GetTime();
+    fFilterUpdatedAIP3 = true;
+    ui->countLabelAIP3->setText(QString::fromStdString(strprintf("Please wait... %d", MASTERNODELIST_FILTER_COOLDOWN_SECONDS)));
 }
 
 void MasternodeList::on_startButton_clicked()
@@ -668,20 +668,20 @@ void MasternodeList::ShowQRCode(std::string strAlias)
     dialog->show();
 }
 
-CDeterministicMNCPtr MasternodeList::GetSelectedDIP3MN()
+CDeterministicMNCPtr MasternodeList::GetSelectedAIP3MN()
 {
     std::string strAddress;
     {
-        LOCK(cs_dip3list);
+        LOCK(cs_aip3list);
 
-        QItemSelectionModel* selectionModel = ui->tableWidgetMasternodesDIP3->selectionModel();
+        QItemSelectionModel* selectionModel = ui->tableWidgetMasternodesAIP3->selectionModel();
         QModelIndexList selected = selectionModel->selectedRows();
 
         if (selected.count() == 0) return nullptr;
 
         QModelIndex index = selected.at(0);
         int nSelectedRow = index.row();
-        strAddress = ui->tableWidgetMasternodesDIP3->item(nSelectedRow, 0)->text().toStdString();
+        strAddress = ui->tableWidgetMasternodesAIP3->item(nSelectedRow, 0)->text().toStdString();
     }
     CService addr;
     if (!Lookup(strAddress.c_str(), addr, Params().GetDefaultPort(), false)) {
@@ -691,9 +691,9 @@ CDeterministicMNCPtr MasternodeList::GetSelectedDIP3MN()
     return mnList.GetUniquePropertyMN(addr);
 }
 
-void MasternodeList::on_extraInfoDIP3_clicked()
+void MasternodeList::on_extraInfoAIP3_clicked()
 {
-    auto dmn = GetSelectedDIP3MN();
+    auto dmn = GetSelectedAIP3MN();
     if (!dmn) {
         return;
     }
@@ -702,7 +702,7 @@ void MasternodeList::on_extraInfoDIP3_clicked()
     dmn->ToJson(json);
 
     // Title of popup window
-    QString strWindowtitle = tr("Additional information for DIP3 Masternode %1").arg(QString::fromStdString(dmn->proTxHash.ToString()));
+    QString strWindowtitle = tr("Additional information for AIP3 Masternode %1").arg(QString::fromStdString(dmn->proTxHash.ToString()));
     QString strText = QString::fromStdString(json.write(2));
 
     QMessageBox::information(this, strWindowtitle, strText);
@@ -710,7 +710,7 @@ void MasternodeList::on_extraInfoDIP3_clicked()
 
 void MasternodeList::on_copyProTxHash_clicked()
 {
-    auto dmn = GetSelectedDIP3MN();
+    auto dmn = GetSelectedAIP3MN();
     if (!dmn) {
         return;
     }
@@ -720,7 +720,7 @@ void MasternodeList::on_copyProTxHash_clicked()
 
 void MasternodeList::on_copyCollateralOutpoint_clicked()
 {
-    auto dmn = GetSelectedDIP3MN();
+    auto dmn = GetSelectedAIP3MN();
     if (!dmn) {
         return;
     }

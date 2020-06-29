@@ -57,7 +57,7 @@ CMasternode::CMasternode(const CMasternodeBroadcast& mnb) :
 
 CMasternode::CMasternode(const uint256 &proTxHash, const CDeterministicMNCPtr& dmn) :
     masternode_info_t{ MASTERNODE_ENABLED, DMN_PROTO_VERSION, GetAdjustedTime(),
-                       dmn->collateralOutpoint, dmn->pdmnState->addr, CKeyID() /* not valid with DIP3 */, dmn->pdmnState->keyIDOwner, dmn->pdmnState->pubKeyOperator, dmn->pdmnState->keyIDVoting},
+                       dmn->collateralOutpoint, dmn->pdmnState->addr, CKeyID() /* not valid with AIP3 */, dmn->pdmnState->keyIDOwner, dmn->pdmnState->pubKeyOperator, dmn->pdmnState->keyIDVoting},
     fAllowMixingTx(true)
 {
 }

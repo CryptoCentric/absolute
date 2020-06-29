@@ -27,6 +27,7 @@
 #include "evo/specialtx.h"
 #include "evo/deterministicmns.h"
 #include "evo/cbtx.h"
+#include "llmq/quorums_init.h"
 
 #include <memory>
 #include <boost/filesystem.hpp>
@@ -71,6 +72,7 @@ TestingSetup::TestingSetup(const std::string& chainName) : BasicTestingSetup(cha
         pblocktree = new CBlockTreeDB(1 << 20, true);
         pcoinsdbview = new CCoinsViewDB(1 << 23, true);
         deterministicMNManager = new CDeterministicMNManager(*evoDb);
+        llmq::InitLLMQSystem(*evoDb);
         pcoinsTip = new CCoinsViewCache(pcoinsdbview);
         InitBlockIndex(chainparams);
         {
@@ -93,6 +95,7 @@ TestingSetup::~TestingSetup()
         threadGroup.join_all();
         UnloadBlockIndex();
         delete pcoinsTip;
+        llmq::DestroyLLMQSystem();
         delete deterministicMNManager;
         delete pcoinsdbview;
         delete pblocktree;
@@ -142,8 +145,17 @@ CBlock TestChainSetup::CreateBlock(const std::vector<CMutableTransaction>& txns,
     std::unique_ptr<CBlockTemplate> pblocktemplate = BlockAssembler(chainparams).CreateNewBlock(scriptPubKey);
     CBlock& block = pblocktemplate->block;
 
+    std::vector<CTransactionRef> llmqCommitments;
+    for (const auto& tx : block.vtx) {
+        if (tx->nVersion == 3 && tx->nType == TRANSACTION_QUORUM_COMMITMENT) {
+            llmqCommitments.emplace_back(tx);
+        }
+    }
+
     // Replace mempool-selected txns with just coinbase plus passed-in txns:
     block.vtx.resize(1);
+    // Re-add quorum commitments
+    block.vtx.insert(block.vtx.end(), llmqCommitments.begin(), llmqCommitments.end());
     BOOST_FOREACH(const CMutableTransaction& tx, txns)
         block.vtx.push_back(MakeTransactionRef(tx));
 

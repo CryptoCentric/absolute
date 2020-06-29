@@ -42,11 +42,11 @@ void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, con
 
     masternodeSync.UpdatedBlockTip(pindexNew, fInitialDownload, connman);
 
-    // Update global DIP0001 activation status
-    fDIP0001ActiveAtTip = pindexNew->nHeight >= Params().GetConsensus().DIP0001Height;
-    // update instantsend autolock activation flag (we reuse the DIP3 deployment)
+    // Update global AIP0001 activation status
+    fAIP0001ActiveAtTip = pindexNew->nHeight >= Params().GetConsensus().AIP0001Height;
+    // update instantsend autolock activation flag (we reuse the AIP3 deployment)
     instantsend.isAutoLockBip9Active =
-            (VersionBitsState(pindexNew, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE);
+            (VersionBitsState(pindexNew, Params().GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE);
 
     if (fInitialDownload)
         return;

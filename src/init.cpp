@@ -69,6 +69,8 @@
 
 #include "evo/deterministicmns.h"
 
+#include "llmq/quorums_init.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <memory>
@@ -303,6 +305,7 @@ void PrepareShutdown()
         pcoinsdbview = NULL;
         delete pblocktree;
         pblocktree = NULL;
+        llmq::DestroyLLMQSystem();
         delete deterministicMNManager;
         deterministicMNManager = NULL;
         delete evoDb;
@@ -827,7 +830,7 @@ void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
         activeMasternodeManager->Init();
 
 #ifdef ENABLE_WALLET
-    // we can't do this before DIP3 is fully initialized
+    // we can't do this before AIP3 is fully initialized
     if (pwalletMain) {
         pwalletMain->AutoLockMasternodeCollaterals();
     }
@@ -1710,6 +1713,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete pcoinsdbview;
                 delete pcoinscatcher;
                 delete pblocktree;
+                llmq::DestroyLLMQSystem();
                 delete deterministicMNManager;
                 delete evoDb;
 
@@ -1719,7 +1723,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 pcoinsdbview = new CCoinsViewDB(nCoinDBCache, false, fReindex || fReindexChainState);
                 pcoinscatcher = new CCoinsViewErrorCatcher(pcoinsdbview);
                 pcoinsTip = new CCoinsViewCache(pcoinscatcher);
-                deterministicMNManager = new CDeterministicMNManager(*evoDb);
+                llmq::InitLLMQSystem(*evoDb);
 
                 if (fReindex) {
                     pblocktree->WriteReindexing(true);

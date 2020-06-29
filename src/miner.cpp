@@ -34,6 +34,8 @@
 #include "evo/simplifiedmns.h"
 #include "evo/deterministicmns.h"
 
+#include "llmq/quorums_blockprocessor.h"
+
 #include <algorithm>
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -96,7 +98,7 @@ BlockAssembler::BlockAssembler(const CChainParams& _chainparams)
     }
 
     // Limit to between 1K and MAX_BLOCK_SIZE-1K for sanity:
-    nBlockMaxSize = std::max((unsigned int)1000, std::min((unsigned int)(MaxBlockSize(fDIP0001ActiveAtTip)-1000), nBlockMaxSize));
+    nBlockMaxSize = std::max((unsigned int)1000, std::min((unsigned int)(MaxBlockSize(fAIP0001ActiveAtTip)-1000), nBlockMaxSize));
 }
 
 void BlockAssembler::resetBlock()
@@ -151,6 +153,16 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     nLockTimeCutoff = (STANDARD_LOCKTIME_VERIFY_FLAGS & LOCKTIME_MEDIAN_TIME_PAST)
                        ? nMedianTimePast
                        : pblock->GetBlockTime();
+
+    if (fAIP0003Active_context) {
+        for (auto& p : Params().GetConsensus().llmqs) {
+            CTransactionRef qcTx;
+            if (llmq::quorumBlockProcessor->GetMinableCommitmentTx(p.first, pindexPrev, qcTx)) {
+                pblock->vtx.emplace_back(qcTx);
+                pblocktemplate->vTxFees.emplace_back(0);
+            }
+        }
+    }
 
     addPriorityTxs();
 
@@ -252,7 +264,7 @@ bool BlockAssembler::TestPackage(uint64_t packageSize, unsigned int packageSigOp
 {
     if (nBlockSize + packageSize >= nBlockMaxSize)
         return false;
-    if (nBlockSigOps + packageSigOps >= MaxBlockSigOps(fDIP0001ActiveAtTip))
+    if (nBlockSigOps + packageSigOps >= MaxBlockSigOps(fAIP0001ActiveAtTip))
         return false;
     return true;
 }
@@ -286,7 +298,7 @@ bool BlockAssembler::TestForBlock(CTxMemPool::txiter iter)
         return false;
     }
 
-    unsigned int nMaxBlockSigOps = MaxBlockSigOps(fDIP0001ActiveAtTip);
+    unsigned int nMaxBlockSigOps = MaxBlockSigOps(fAIP0001ActiveAtTip);
     if (nBlockSigOps + iter->GetSigOpCount() >= nMaxBlockSigOps) {
         // If the block has room for no more sig ops then
         // flag that the block is finished

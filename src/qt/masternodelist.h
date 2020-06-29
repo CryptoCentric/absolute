@@ -42,21 +42,21 @@ public:
     void ShowQRCode(std::string strAlias);
     void StartAlias(std::string strAlias);
     void StartAll(std::string strCommand = "start-all");
-    CDeterministicMNCPtr GetSelectedDIP3MN();
+    CDeterministicMNCPtr GetSelectedAIP3MN();
 
 private:
     QMenu* contextMenu;
-    QMenu* contextMenuDIP3;
+    QMenu* contextMenuAIP3;
     int64_t nTimeFilterUpdated;
-    int64_t nTimeFilterUpdatedDIP3;
+    int64_t nTimeFilterUpdatedAIP3;
     bool fFilterUpdated;
-    bool fFilterUpdatedDIP3;
+    bool fFilterUpdatedAIP3;
 
 public Q_SLOTS:
     void updateMyMasternodeInfo(QString strAlias, QString strAddr, const COutPoint& outpoint);
     void updateMyNodeList(bool fForce = false);
     void updateNodeList();
-    void updateDIP3List();
+    void updateAIP3List();
 
 Q_SIGNALS:
     void doubleClicked(const QModelIndex&);
@@ -73,17 +73,17 @@ private:
     // Protects tableWidgetMyMasternodes
     CCriticalSection cs_mymnlist;
 
-    // Protects tableWidgetMasternodesDIP3
-    CCriticalSection cs_dip3list;
+    // Protects tableWidgetMasternodesAIP3
+    CCriticalSection cs_aip3list;
 
     QString strCurrentFilter;
-    QString strCurrentFilterDIP3;
+    QString strCurrentFilterAIP3;
 
 private Q_SLOTS:
     void showContextMenu(const QPoint&);
-    void showContextMenuDIP3(const QPoint&);
+    void showContextMenuAIP3(const QPoint&);
     void on_filterLineEdit_textChanged(const QString& strFilterIn);
-    void on_filterLineEditDIP3_textChanged(const QString& strFilterIn);
+    void on_filterLineEditAIP3_textChanged(const QString& strFilterIn);
     void on_QRButton_clicked();
     void on_startButton_clicked();
     void on_startAllButton_clicked();
@@ -91,7 +91,7 @@ private Q_SLOTS:
     void on_tableWidgetMyMasternodes_itemSelectionChanged();
     void on_UpdateButton_clicked();
 
-    void on_extraInfoDIP3_clicked();
+    void on_extraInfoAIP3_clicked();
     void on_copyProTxHash_clicked();
     void on_copyCollateralOutpoint_clicked();
 };

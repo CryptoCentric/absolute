@@ -166,8 +166,8 @@ See detailed [change log](https://github.com/dashpay/dash/compare/v0.12.2.1...da
 - [`4802a1fb7`](https://github.com/dashpay/dash/commit/4802a1fb7) Allow IS for all txes, not only for txes with p2pkh and data outputs (#1760)
 - [`f37a64208`](https://github.com/dashpay/dash/commit/f37a64208) InstantSend txes should never qualify to be a 0-fee txes (#1777)
 
-### DIP0001:
-- [`3028af19f`](https://github.com/dashpay/dash/commit/3028af19f) post-DIP0001 cleanup (#1763)
+### AIP0001:
+- [`3028af19f`](https://github.com/dashpay/dash/commit/3028af19f) post-AIP0001 cleanup (#1763)
 - [`51b2c7501`](https://github.com/dashpay/dash/commit/51b2c7501) Fix WarningBitsConditionChecker (#1765)
 
 ### Network/Sync:

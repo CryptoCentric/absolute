@@ -30,8 +30,8 @@ class AutoIXMempoolTest(DashTestFramework):
 
     def get_autoix_bip9_status(self):
         info = self.nodes[0].getblockchaininfo()
-        # we reuse the dip3 deployment
-        return info['bip9_softforks']['dip0003']['status']
+        # we reuse the aip3 deployment
+        return info['bip9_softforks']['aip0003']['status']
 
     def activate_autoix_bip9(self):
         # sync nodes periodically

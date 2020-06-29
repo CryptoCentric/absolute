@@ -704,8 +704,8 @@ UniValue getblocktemplate(const JSONRPCRequest& request)
     result.push_back(Pair("mintime", (int64_t)pindexPrev->GetMedianTimePast()+1));
     result.push_back(Pair("mutable", aMutable));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
-    result.push_back(Pair("sigoplimit", (int64_t)MaxBlockSigOps(fDIP0001ActiveAtTip)));
-    result.push_back(Pair("sizelimit", (int64_t)MaxBlockSize(fDIP0001ActiveAtTip)));
+    result.push_back(Pair("sigoplimit", (int64_t)MaxBlockSigOps(fAIP0001ActiveAtTip)));
+    result.push_back(Pair("sizelimit", (int64_t)MaxBlockSize(fAIP0001ActiveAtTip)));
     result.push_back(Pair("curtime", pblock->GetBlockTime()));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
     result.push_back(Pair("previousbits", strprintf("%08x", pblocktemplate->nPrevBits)));

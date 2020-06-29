@@ -608,7 +608,7 @@ bool CMasternodeMan::GetMasternodeInfo(const CScript& payee, masternode_info_t& 
 {
     if (deterministicMNManager->IsDeterministicMNsSporkActive()) {
         // we can't reliably search by payee as there might be duplicates. Also, keyIDCollateralAddress is not
-        // always the payout address as DIP3 allows using different keys for collateral and payouts
+        // always the payout address as AIP3 allows using different keys for collateral and payouts
         // this method is only used from ComputeBlockVersion, which has a different logic for deterministic MNs
         // this method won't be reimplemented when removing the compatibility code
         return false;

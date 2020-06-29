@@ -95,7 +95,7 @@ uint64_t nPruneTarget = 0;
 bool fAlerts = DEFAULT_ALERTS;
 int64_t nMaxTipAge = DEFAULT_MAX_TIP_AGE;
 
-std::atomic<bool> fDIP0001ActiveAtTip{false};
+std::atomic<bool> fAIP0001ActiveAtTip{false};
 std::atomic<bool> fAIP0003ActiveAtTip{false};
 
 uint256 hashAssumeValid;
@@ -517,10 +517,15 @@ int GetUTXOConfirmations(const COutPoint& outpoint)
 
 bool CheckTransaction(const CTransaction& tx, CValidationState &state)
 {
+    bool allowEmptyTxInOut = false;
+    if (tx.nType == TRANSACTION_QUORUM_COMMITMENT) {
+        allowEmptyTxInOut = true;
+    }
+
     // Basic checks that don't depend on any context
-    if (tx.vin.empty())
+    if (!allowEmptyTxInOut && tx.vin.empty())
         return state.DoS(10, false, REJECT_INVALID, "bad-txns-vin-empty");
-    if (tx.vout.empty())
+    if (!allowEmptyTxInOut && tx.vout.empty())
         return state.DoS(10, false, REJECT_INVALID, "bad-txns-vout-empty");
     // Size limits
     if (::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_LEGACY_BLOCK_SIZE)
@@ -593,7 +598,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state)
 bool ContextualCheckTransaction(const CTransaction& tx, CValidationState &state, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
     int nHeight = pindexPrev == NULL ? 0 : pindexPrev->nHeight + 1;
-    bool fDIP0001Active_context = nHeight >= consensusParams.DIP0001Height;
+    bool fAIP0001Active_context = nHeight >= consensusParams.AIP0001Height;
     bool fAIP0003Active_context = VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE;
 
     if (fAIP0003Active_context) {
@@ -604,7 +609,8 @@ bool ContextualCheckTransaction(const CTransaction& tx, CValidationState &state,
                 tx.nType != TRANSACTION_PROVIDER_UPDATE_SERVICE &&
                 tx.nType != TRANSACTION_PROVIDER_UPDATE_REGISTRAR &&
                 tx.nType != TRANSACTION_PROVIDER_UPDATE_REVOKE &&
-                tx.nType != TRANSACTION_COINBASE) {
+                tx.nType != TRANSACTION_COINBASE &&
+                tx.nType != TRANSACTION_QUORUM_COMMITMENT) {
                 return state.DoS(100, false, REJECT_INVALID, "bad-txns-type");
             }
             if (tx.IsCoinBase() && tx.nType != TRANSACTION_COINBASE)
@@ -615,7 +621,7 @@ bool ContextualCheckTransaction(const CTransaction& tx, CValidationState &state,
     }
 
     // Size limits
-    if (fDIP0001Active_context && ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_STANDARD_TX_SIZE)
+    if (fAIP0001Active_context && ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION) > MAX_STANDARD_TX_SIZE)
         return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
 
     return true;
@@ -668,6 +674,11 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
 
     if (!ContextualCheckTransaction(tx, state, Params().GetConsensus(), chainActive.Tip()))
         return error("%s: ContextualCheckTransaction: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
+
+    if (tx.nVersion == 3 && tx.nType == TRANSACTION_QUORUM_COMMITMENT) {
+        // quorum commitment is not allowed outside of blocks
+        return state.DoS(100, false, REJECT_INVALID, "qc-not-allowed");
+    }
 
     if (!CheckSpecialTx(tx, chainActive.Tip(), state))
         return false;
@@ -1763,9 +1774,9 @@ static DisconnectResult DisconnectBlock(const CBlock& block, CValidationState& s
     }
 
     // make sure the flag is reset in case of a chain reorg
-    // (we reused the DIP3 deployment)
+    // (we reused the AIP3 deployment)
     instantsend.isAutoLockBip9Active =
-            (VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE);
+            (VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE);
 
     return fClean ? DISCONNECT_OK : DISCONNECT_UNCLEAN;
 }
@@ -2047,7 +2058,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > addressUnspentIndex;
     std::vector<std::pair<CSpentIndexKey, CSpentIndexValue> > spentIndex;
 
-    bool fDIP0001Active_context = pindex->nHeight >= Params().GetConsensus().DIP0001Height;
+    bool fAIP0001Active_context = pindex->nHeight >= Params().GetConsensus().AIP0001Height;
 
     for (unsigned int i = 0; i < block.vtx.size(); i++)
     {
@@ -2056,7 +2067,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
         nInputs += tx.vin.size();
         nSigOps += GetLegacySigOpCount(tx);
-        if (nSigOps > MaxBlockSigOps(fDIP0001Active_context))
+        if (nSigOps > MaxBlockSigOps(fAIP0001Active_context))
             return state.DoS(100, error("ConnectBlock(): too many sigops"),
                              REJECT_INVALID, "bad-blk-sigops");
 
@@ -2125,7 +2136,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 // this is to prevent a "rogue miner" from creating
                 // an incredibly-expensive-to-validate block.
                 nSigOps += GetP2SHSigOpCount(tx, view);
-                if (nSigOps > MaxBlockSigOps(fDIP0001Active_context))
+                if (nSigOps > MaxBlockSigOps(fAIP0001Active_context))
                     return state.DoS(100, error("ConnectBlock(): too many sigops"),
                                      REJECT_INVALID, "bad-blk-sigops");
             }
@@ -2262,10 +2273,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     view.SetBestBlock(pindex->GetBlockHash());
 
     if (!fJustCheck) {
-        // check if previous block had DIP3 disabled and the new block has it enabled
-        if (VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) != THRESHOLD_ACTIVE &&
-            VersionBitsState(pindex, chainparams.GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE) {
-            LogPrintf("%s -- DIP0003 got activated at height %d\n", __func__, pindex->nHeight);
+        // check if previous block had AIP3 disabled and the new block has it enabled
+        if (VersionBitsState(pindex->pprev, chainparams.GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) != THRESHOLD_ACTIVE &&
+            VersionBitsState(pindex, chainparams.GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE) {
+            LogPrintf("%s -- AIP0003 got activated at height %d\n", __func__, pindex->nHeight);
         }
     }
 
@@ -3348,11 +3359,11 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Co
                               ? pindexPrev->GetMedianTimePast()
                               : block.GetBlockTime();
 
-    bool fDIP0001Active_context = nHeight >= Params().GetConsensus().DIP0001Height;
+    bool fAIP0001Active_context = nHeight >= Params().GetConsensus().AIP0001Height;
     bool fAIP0003Active_context = VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE;
 
     // Size limits
-    unsigned int nMaxBlockSize = MaxBlockSize(fDIP0001Active_context);
+    unsigned int nMaxBlockSize = MaxBlockSize(fAIP0001Active_context);
     if (block.vtx.empty() || block.vtx.size() > nMaxBlockSize || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION) > nMaxBlockSize)
         return state.DoS(10, false, REJECT_INVALID, "bad-blk-length", false, "size limits failed");
 
@@ -3370,7 +3381,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, const Co
     }
 
     // Check sigops
-    if (nSigOps > MaxBlockSigOps(fDIP0001Active_context))
+    if (nSigOps > MaxBlockSigOps(fAIP0001Active_context))
         return state.DoS(10, false, REJECT_INVALID, "bad-blk-sigops", false, "out-of-bounds SigOpCount");
 
     // Enforce rule that the coinbase starts with serialized block height
