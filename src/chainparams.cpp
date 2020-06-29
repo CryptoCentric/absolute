@@ -184,6 +184,13 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nTimeout = 1561680000; // Friday, 28-Jun-19
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nWindowSize = 4032;
         consensus.vDeployments[Consensus::DEPLOYMENT_BIP147].nThreshold = 3226; // 80% of 4032
+		
+		// Deployment of DIP0003
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].bit = 3;
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nStartTime = 1593458430; // Monday, 29 June 2020 19:20:30 GMT
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nTimeout = 1624994430; // Tuesday, 29 June 2021 19:20:30 GMT
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nWindowSize = 4032;
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nThreshold = 3226; // 80% of 4032
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000100000");
