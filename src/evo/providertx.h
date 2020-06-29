@@ -5,9 +5,9 @@
 #ifndef Absolute_PROVIDERTX_H
 #define Absolute_PROVIDERTX_H
 
-#include "primitives/transaction.h"
-#include "consensus/validation.h"
 #include "bls/bls.h"
+#include "consensus/validation.h"
+#include "primitives/transaction.h"
 
 #include "netaddress.h"
 #include "pubkey.h"
@@ -21,9 +21,9 @@ public:
     static const uint16_t CURRENT_VERSION = 1;
 
 public:
-    uint16_t nVersion{CURRENT_VERSION}; // message version
-    uint16_t nType{0}; // only 0 supported for now
-    uint16_t nMode{0}; // only 0 supported for now
+    uint16_t nVersion{CURRENT_VERSION};                    // message version
+    uint16_t nType{0};                                     // only 0 supported for now
+    uint16_t nMode{0};                                     // only 0 supported for now
     COutPoint collateralOutpoint{uint256(), (uint32_t)-1}; // if hash is null, we refer to a ProRegTx output
     CService addr;
     CKeyID keyIDOwner;

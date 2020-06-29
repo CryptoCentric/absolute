@@ -1,12 +1,12 @@
-// Copyright (c) 2017 The Dash Core developers
+// Copyright (c) 2017-2018 The Dash Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef ABSOLUTE_CBTX_H
 #define ABSOLUTE_CBTX_H
 
-#include "primitives/transaction.h"
 #include "consensus/validation.h"
+#include "primitives/transaction.h"
 
 class CBlock;
 class CBlockIndex;
