@@ -330,8 +330,8 @@ public:
 
         // Deployment of AIP0003
         consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].bit = 3;
-        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nStartTime = 1540504800; // Oct 26, 2018
-        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nTimeout = 1572040800; // Oct 26, 2019
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nStartTime = 1593458430; // Monday, 29 June 2020 19:20:30
+        consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nTimeout = 1593458430; // Monday, 29 June 2020 19:20:30
         consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nWindowSize = 100;
         consensus.vDeployments[Consensus::DEPLOYMENT_AIP0003].nThreshold = 50; // 50% of 100
 
