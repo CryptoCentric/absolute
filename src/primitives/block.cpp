@@ -16,7 +16,7 @@ uint256 CBlockHeader::GetHash() const
     std::vector<unsigned char> vch(80);
     CVectorWriter ss(SER_NETWORK, PROTOCOL_VERSION, vch, 0);
     ss << *this;
-    return lyra2re2_hash((const char *)vch.data(), (const char *)vch.data() + vch.size());
+    return lyra2re2_hash(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlock::ToString() const
