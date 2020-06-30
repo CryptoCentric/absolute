@@ -3326,9 +3326,9 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
                     }
                     pBestIndex = pindex;
                     bool isPrevPovnetGenesisBlock = false;
-                    if (!consensusParams.hashPovnetGenesisBlock.IsNull() &&
+                    if (!consensusParams.hashPoVNETGenesisBlock.IsNull() &&
                         pindex->pprev != nullptr &&
-                        pindex->pprev->GetBlockHash() == consensusParams.hashPovnetGenesisBlock) {
+                        pindex->pprev->GetBlockHash() == consensusParams.hashPoVNETGenesisBlock) {
                         // even though the povnet genesis block was never transferred through the wire and thus not
                         // appear anywhere in the node state where we track what other nodes have or not have, we can
                         // assume that the other node already knows the povnet genesis block
