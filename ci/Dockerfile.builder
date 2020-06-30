@@ -25,8 +25,8 @@ ARG GROUP_ID=1000
 # add user with specified (or default) user/group ids
 ENV USER_ID ${USER_ID}
 ENV GROUP_ID ${GROUP_ID}
-RUN groupadd -g ${GROUP_ID} dash
-RUN useradd -u ${USER_ID} -g dash -s /bin/bash -m -d /dash dash
+RUN groupadd -g ${GROUP_ID} absolute
+RUN useradd -u ${USER_ID} -g absolute -s /bin/bash -m -d /absolute absolute
 
 # Extra packages
 ARG BUILD_TARGET=linux64
