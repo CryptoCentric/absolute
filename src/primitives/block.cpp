@@ -14,7 +14,9 @@
 uint256 CBlockHeader::GetHash() const
 
 {
-    return lyra2re2_hash(BEGIN(nVersion), END(nNonce));
+uint256 targetHash;
+lyra2re2_hash(BEGIN(nVersion), BEGIN(targetHash));
+return targetHash;
 }
 
 std::string CBlock::ToString() const
@@ -33,7 +35,3 @@ std::string CBlock::ToString() const
     }
     return s.str();
 }
-
-
-
-
