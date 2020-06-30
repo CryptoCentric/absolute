@@ -65,7 +65,7 @@ public:
         strDataDir = dataDir;
     }
 };
-static CBasePoVNETParams *PoVNETParams;
+static CBasePoVNETParams *povNetParams;
 /*
  * Regression test
  */
@@ -95,8 +95,8 @@ CBaseChainParams& BaseParams(const std::string& chain)
     else if (chain == CBaseChainParams::TESTNET)
         return testNetParams;
     else if (chain == CBaseChainParams::POVNET) {
-        assert(PoVNETParams);
-        return *PoVNETParams;
+        assert(povNetParams);
+        return *povNetParams;
     } else if (chain == CBaseChainParams::REGTEST)
         return regTestParams;
     else
