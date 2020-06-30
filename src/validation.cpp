@@ -1625,10 +1625,10 @@ static DisconnectResult DisconnectBlock(const CBlock& block, CValidationState& s
 {
     assert(pindex->GetBlockHash() == view.GetBestBlock());
 
-    bool fDIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+    bool fAIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE;
     bool fHasBestBlock = evoDb->VerifyBestBlock(pindex->GetBlockHash());
 
-    if (fDIP0003Active && !fHasBestBlock) {
+    if (fAIP0003Active && !fHasBestBlock) {
         // Nodes that upgraded after DIP3 activation will have to reindex to ensure evodb consistency
         AbortNode("Found EvoDB inconsistency, you must reindex to continue");
     }
@@ -1942,10 +1942,10 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
     assert(hashPrevBlock == view.GetBestBlock());
 
     if (pindex->pprev) {
-        bool fDIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+        bool fAIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_AIP0003, versionbitscache) == THRESHOLD_ACTIVE;
         bool fHasBestBlock = evoDb->VerifyBestBlock(pindex->pprev->GetBlockHash());
 
-        if (fDIP0003Active && !fHasBestBlock) {
+        if (fAIP0003Active && !fHasBestBlock) {
             // Nodes that upgraded after DIP3 activation will have to reindex to ensure evodb consistency
             AbortNode("Found EvoDB inconsistency, you must reindex to continue");
         }
