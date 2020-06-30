@@ -2760,7 +2760,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
     else if (strCommand == NetMsgType::PING)
     {
-        if (pfrom->nVersion > AIP0031_VERSION)
+        if (pfrom->nVersion > BIP0031_VERSION)
         {
             uint64_t nonce = 0;
             vRecv >> nonce;
@@ -3189,7 +3189,7 @@ bool SendMessages(CNode* pto, CConnman& connman, const std::atomic<bool>& interr
             }
             pto->fPingQueued = false;
             pto->nPingUsecStart = GetTimeMicros();
-            if (pto->nVersion > AIP0031_VERSION) {
+            if (pto->nVersion > BIP0031_VERSION) {
                 pto->nPingNonceSent = nonce;
                 connman.PushMessage(pto, msgMaker.Make(NetMsgType::PING, nonce));
             } else {
