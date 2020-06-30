@@ -111,7 +111,7 @@ void SelectBaseParams(const std::string& chain)
 
         povNetParams = (CBasePoVNETParams*)new uint8_t[sizeof(CBasePoVNETParams)];
         memset(povNetParams, 0, sizeof(CBasePoVNETParams));
-        new (povNetParams) CBasePoVNETParams(povNetParams);
+        new (povNetParams) CBasePoVNETParams(povNetName);
     }
     pCurrentBaseParams = &BaseParams(chain);
 }
