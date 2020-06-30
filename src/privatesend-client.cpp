@@ -23,9 +23,9 @@ CPrivateSendClientManager privateSendClient;
 
 void CPrivateSendClientManager::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
 {
-    if(fMasternodeMode) return;
-    if(fLiteMode) return; // ignore all absolute related functionality
-    if(!masternodeSync.IsBlockchainSynced()) return;
+    if (fMasternodeMode) return;
+    if (fLiteMode) return; // ignore all Absolute related functionality
+    if (!masternodeSync.IsBlockchainSynced()) return;
 
     if (!CheckDiskSpace()) {
         ResetPool();
@@ -128,11 +128,9 @@ void CPrivateSendClientManager::ProcessMessage(CNode* pfrom, const std::string& 
 
 void CPrivateSendClientSession::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
 {
-    if(fMasternodeMode) return;
-    if(fLiteMode) return; // ignore all Absolute related functionality
-    if(!masternodeSync.IsBlockchainSynced()) return;
-
-    if(strCommand == NetMsgType::DSSTATUSUPDATE) {
+    if (fMasternodeMode) return;
+    if (fLiteMode) return; // ignore all Absolute related functionality
+    if (!masternodeSync.IsBlockchainSynced()) return;
 
     if (strCommand == NetMsgType::DSSTATUSUPDATE) {
         if (pfrom->nVersion < MIN_PRIVATESEND_PEER_PROTO_VERSION) {
@@ -450,9 +448,10 @@ bool CPrivateSendClientSession::CheckTimeout()
 void CPrivateSendClientManager::CheckTimeout()
 {
     if (fMasternodeMode) return;
-    if (!fEnablePrivateSend) return;
+
 
     CheckQueue();
+    if (!fEnablePrivateSend) return;
 
     LOCK(cs_deqsessions);
     for (auto& session : deqSessions) {
