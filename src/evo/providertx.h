@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef Absolute_PROVIDERTX_H
-#define Absolute_PROVIDERTX_H
+#ifndef ABSOLUTE_PROVIDERTX_H
+#define ABSOLUTE_PROVIDERTX_H
 
 #include "bls/bls.h"
 #include "consensus/validation.h"

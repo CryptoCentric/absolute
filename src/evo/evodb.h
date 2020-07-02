@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef ABSOLUTE_EVODB_H
-#define ABSOLUT_EVODB_H
+#define ABSOLUTE_EVODB_H
 
 #include "dbwrapper.h"
 #include "sync.h"
