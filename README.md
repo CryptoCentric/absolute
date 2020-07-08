@@ -1,8 +1,6 @@
 # Absolute 0.12.3.1
 
-Absolute (ABS) is a digital currency inspired by solutions first used in Dash. 
-
-Absolute will provide an advertising, promotions and event platform with smart contracts that will have a global reach of network enablers. Our Proof of View network will allow agents, organisers and promoters the ability to reach a global audience and utilise their participation to achieve their desired media goals.
+Absolute will service the AbsoluteX platform designed to help advertising, promotions and events, with smart contracts that will have a global reach of network enablers. Our Proof of View network will allow agents, organisers and promoters the ability to reach a global audience and utilise their participation to achieve their desired media goals.
 
 The network is driven by ultra-low transaction fees, reliable and fast transactions (10x faster than Bitcoin) which are supported by a large core network of Masternodes. 
 
